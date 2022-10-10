@@ -1,0 +1,1234 @@
+<!DOCTYPE HTML>
+<html lang="zh-cn" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>内部可变性类型 - rust-inside-std-book</title>
+        <!-- Custom HTML head -->
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="index.html">README</a></li><li class="chapter-item expanded affix "><a href="引言.html">引言</a></li><li class="chapter-item expanded affix "><a href="01-RUST库体系概述.html">RUST库体系概述</a></li><li class="chapter-item expanded affix "><a href="02-内存.html">内存</a></li><li class="chapter-item expanded affix "><a href="03-固有函数库及基础类型.html">固有函数库及基础类型</a></li><li class="chapter-item expanded affix "><a href="04-基础Trait.html">基础Trait</a></li><li class="chapter-item expanded affix "><a href="05-Iterator.html">Iterator</a></li><li class="chapter-item expanded affix "><a href="06-基本类型续.html">基本类型续</a></li><li class="chapter-item expanded affix "><a href="07-内部可变性类型.html" class="active">内部可变性类型</a></li><li class="chapter-item expanded affix "><a href="08-智能指针类型(一).html">智能指针类型(一)</a></li><li class="chapter-item expanded affix "><a href="09-智能指针类型(二).html">智能指针类型(二)</a></li><li class="chapter-item expanded affix "><a href="10-智能指针类型(三).html">智能指针类型(三)</a></li><li class="chapter-item expanded affix "><a href="11-智能指针类型(四).html">智能指针类型(四)</a></li><li class="chapter-item expanded affix "><a href="12-std库(一)FFI及内存管理.html">std库(一)FFI及内存管理</a></li><li class="chapter-item expanded affix "><a href="13-std库(二)文件描述符及进程管理.html">std库(二)文件描述符及进程管理</a></li><li class="chapter-item expanded affix "><a href="14-std库(三)线程间锁通信.html">std库(三)线程间锁通信</a></li><li class="chapter-item expanded affix "><a href="15-std库(四)线程临界区类型.html">std库(四)线程临界区类型</a></li><li class="chapter-item expanded affix "><a href="16-std库(五)线程管理.html">std库(五)线程管理</a></li><li class="chapter-item expanded affix "><a href="17-std库(六)mpsc通信.html">std库(六)mpsc通信</a></li><li class="chapter-item expanded affix "><a href="18-std库(七)RUST的RUNTIME.html">std库(七)RUST的RUNTIME</a></li><li class="chapter-item expanded affix "><a href="19-std库(八)RUST文件系统.html">std库(八)RUST文件系统</a></li><li class="chapter-item expanded affix "><a href="20-std库(九)RUST的IO.html">std库(九)RUST的IO</a></li><li class="chapter-item expanded affix "><a href="21-RUST的异步编程.html">RUST的异步编程</a></li><li class="chapter-item expanded affix "><a href="后记.html">后记</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">rust-inside-std-book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="内部可变类型代码分析"><a class="header" href="#内部可变类型代码分析">内部可变类型代码分析</a></h1>
+<p>内部可变性类型常常让人疑惑，感觉到是&quot;xxxx,费二遍事&quot;。因为在程序中，频繁操作的变量大多属于内部可变性类型的范畴, 这就更加让人愤怒。内部可变性类型通常被RUST初学者认为是可变引用独占性的补丁特性。<br />
+内部可变性类型正确的认识应该是：这是RUST的有意为之的特性，很可能是先有内部可变性，才使得可变引用的独占性成立。内部可变性设计是为了减少变量写操作的无序性，使程序员更好的去设计有可能冲突的变量写操作，减少无序写操作导致的bug。也使得程序员明确的发现变量可能冲突的写操作，产生警惕心，从而借助编译器找到更多的写冲突问题。
+所以，内部可变性类型显著的提升了代码的质量。</p>
+<p>内部可变性的基础是Borrow trait：</p>
+<h2 id="borrow-trait-代码分析"><a class="header" href="#borrow-trait-代码分析">Borrow trait 代码分析</a></h2>
+<p>代码路径如下：<br />
+%USER%.rustup\toolchains\nightly-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\borrow.rs</p>
+<p>Borrow trait实现了对变量引用的导出，一般是在封装类型上实现。通过borrow调用可以将这些类型的内部变量引用提供给外部。通常的情况下，这些类型也都实现了Deref，AsRef等trait可以获取内部变量引用，所以这些trait之间有些重复。但Borrow trait 最主要的场景是作为内部可变性类型<code>RefCell&lt;T&gt;</code>的内部变量引用导出，这是Deref, AsRef等trait无能为力的区域。本节之后将分析<code>RefCell&lt;T&gt;</code>类型时再给出进一步阐述。</p>
+<p>Borrow trait代码定义如下：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub trait Borrow&lt;Borrowed: ?Sized&gt; {
+    fn borrow(&amp;self) -&gt; &amp;Borrowed;
+}
+
+pub trait BorrowMut&lt;Borrowed: ?Sized&gt;: Borrow&lt;Borrowed&gt; {
+    fn borrow_mut(&amp;mut self) -&gt; &amp;mut Borrowed;
+}
+//每一个类型都实现了针对自身的Borrow trait
+impl&lt;T: ?Sized&gt; Borrow&lt;T&gt; for T {
+    fn borrow(&amp;self) -&gt; &amp;T {
+        self
+    }
+}
+
+//每一个类型都实现了针对自身的BorrowMut trait
+impl&lt;T: ?Sized&gt; BorrowMut&lt;T&gt; for T {
+    fn borrow_mut(&amp;mut self) -&gt; &amp;mut T {
+        self
+    }
+}
+
+//每一个类型的引用都实现了对自身的Borrow trait
+impl&lt;T: ?Sized&gt; Borrow&lt;T&gt; for &amp;T {
+    fn borrow(&amp;self) -&gt; &amp;T {
+        &amp;**self
+    }
+}
+//每一个类型的可变引用都实现了针对自身的Borrow trait
+impl&lt;T: ?Sized&gt; Borrow&lt;T&gt; for &amp;mut T {
+    fn borrow(&amp;self) -&gt; &amp;T {
+        &amp;**self
+    }
+}
+
+//每一个类型的可变引用都实现了针对自身的BorrowMut
+impl&lt;T: ?Sized&gt; BorrowMut&lt;T&gt; for &amp;mut T {
+    fn borrow_mut(&amp;mut self) -&gt; &amp;mut T {
+        &amp;mut **self
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="cell模块类型代码分析"><a class="header" href="#cell模块类型代码分析">Cell模块类型代码分析</a></h2>
+<p>代码路径：
+%USER%.rustup\toolchains\nightly-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\cell.rs</p>
+<p>Cell类型提供了内部可变性的功能。对应于以下场景：<br />
+一个变量存在多个引用，希望通过这些引用都可以修改此变量。</p>
+<p>RUST的可变引用与不可变引用不能同时共存，这导致了无法通过普通的引用语法完成上述场景。<br />
+RUST提供的解决方案是<code>Cell&lt;T&gt;</code>封装类型。思路很简单，提供一个封装类型结构，对此类型实现一个set方法来修改内部封装的变量。set方法主要是通过unsafe RUST来实现内部变量修改。<br />
+Cell模块类型的层次如下：</p>
+<ol>
+<li><code>UnsafeCell&lt;T&gt;</code>负责将内部封装的变量导出多个<code>* mut T</code>。其他模块只要基于<code>*mut T</code>生成可变引用，即可修改内部变量。这显然是违反RUST的可变引用的语法的，也是不安全的。</li>
+<li><code>Cell&lt;T&gt;</code>基于<code>UnsafeCell&lt;T&gt;</code>导出的<code>*mut T</code>实现了set方法改变内部的T类型变量。只要拥有<code>Cell&lt;T&gt;</code>的引用，即可以用set方法修改<code>Cell&lt;T&gt;</code>内部的变量。显然，直接用<code>Cell&lt;T&gt;</code>引用对变量进行修改会引发修改冲突，安全隐患很大。</li>
+<li><code>RefCell&lt;T&gt;</code>基于<code>Cell&lt;T&gt;</code>及<code>UnsafeCell&lt;T&gt;</code>，并实现Borrow Trait 及 BorrowMut Trait，可以实现在生命周期不重合的情况下的多个可变引用，且可变引用与不可变引用不可以同时存在。显然，<code>RefCell&lt;T&gt;</code>是与RUST内存安全理念相契合的内部可变性实现方案。</li>
+</ol>
+<h3 id="unsafecellt代码分析"><a class="header" href="#unsafecellt代码分析"><code>UnsafeCell&lt;T&gt;</code>代码分析</a></h3>
+<p>UnsafeCell是RUST的内部可变结构的最底层基础设施，Cell结构和RefCell结构都是用UnsafeCell来实现内部可变性的。 </p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct UnsafeCell&lt;T: ?Sized&gt; {
+    value: T,
+}
+impl&lt;T&gt; UnsafeCell&lt;T&gt; {
+    //创建封装结构
+    pub const fn new(value: T) -&gt; UnsafeCell&lt;T&gt; {
+        UnsafeCell { value }
+    }
+
+    //解封装
+    pub const fn into_inner(self) -&gt; T {
+        self.value
+    }
+}
+//对任意T的类型，可以为T.into() 创建UnsafeCell类型变量
+impl&lt;T&gt; const From&lt;T&gt; for UnsafeCell&lt;T&gt; {
+    fn from(t: T) -&gt; UnsafeCell&lt;T&gt; {
+        UnsafeCell::new(t)
+    }
+}
+
+impl&lt;T: ?Sized&gt; UnsafeCell&lt;T&gt; {
+    pub const fn get(&amp;self) -&gt; *mut T {
+        // 将裸指针导出，这是为什么起名是UnsafeCell的原因
+        // 此裸指针的安全性由调用代码保证,调用代码可以使用此裸指针改变内部封装的变量
+        self as *const UnsafeCell&lt;T&gt; as *const T as *mut T
+    }
+
+    //给出一个正常的可变引用, 此引用存在期间，get及raw_get调用会编译器告警
+    pub const fn get_mut(&amp;mut self) -&gt; &amp;mut T {
+        &amp;mut self.value
+    }
+    
+    //参数与get有区别，是关联函数
+    pub const fn raw_get(this: *const Self) -&gt; *mut T {
+        this as *const T as *mut T
+    }
+}
+
+//显然，UnsafeCell不支持Sync，即使内部变量支持Sync，这与RUST的默认规则不一致，需要显式声明
+impl &lt;T:?Sized&gt; !Sync for UnsafeCell&lt;T&gt; {} 
+
+<span class="boring">}</span></code></pre></pre>
+<p>可以看到，UnsafeCell的get函数返回了裸指针，UnsafeCell逃脱RUST对引用安全检查的方法实际上就是个通常的unsafe 的裸指针操作，没有任何神秘性可言。</p>
+<h3 id="cellt代码分析"><a class="header" href="#cellt代码分析"><code>Cell&lt;T&gt;</code>代码分析</a></h3>
+<p>Cell<T> 内部包装UnsafeCell<T>， 利用UnsafeCell<T>的方法获得裸指针后，用unsafe代码对内部变量进行赋值，从而绕开了RUST语言编译器对引用的约束。Cell<T>的赋值实际上和直接使用裸指针赋值是等同的，但因为提供了方法，没有直接暴露裸指针，所以保证了安全性。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[repr(transparent)]
+pub struct Cell&lt;T: ?Sized&gt; {
+    value: UnsafeCell&lt;T&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>Cell<T>创建方法：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T&gt; const From&lt;T&gt; for Cell&lt;T&gt; {
+    fn from(t: T) -&gt; Cell&lt;T&gt; {
+        Cell::new(t)
+    }
+}
+
+impl&lt;T&gt; Cell&lt;T&gt; {
+    pub const fn new(value: T) -&gt; Cell&lt;T&gt; {
+        Cell { value: UnsafeCell::new(value) }
+    }
+<span class="boring">}</span></code></pre></pre>
+<p><code>Cell&lt;T&gt;</code> 改变内部变量的方法:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span>    
+<span class="boring">fn main() {
+</span>    pub fn set(&amp;self, val: T) {
+        //实际调用mem::replace
+        let old = self.replace(val);
+        //这里不调用drop, old也应该因为生命周期终结被释放。
+        //此处调用drop以确保万无一失
+        drop(old);
+    }
+
+    pub fn swap(&amp;self, other: &amp;Self) {
+        //此处注意，ptr::eq不仅仅比较地址，也比较元数据
+        if ptr::eq(self, other) {
+            return;
+        }
+        //此段不会出现在跨线程的场景下
+        unsafe {
+            ptr::swap(self.value.get(), other.value.get());
+        }
+    }
+
+    //此函数也会将原有的值及所有权返回
+    pub fn replace(&amp;self, val: T) -&gt; T {
+        // 利用unsafe粗暴将指针转变为可变引用，然后赋值，此处必须用
+        // replace，原有值的所有权需要有交代。
+        mem::replace(unsafe { &amp;mut *self.value.get() }, val)
+    }
+<span class="boring">}</span></code></pre></pre>
+<p>获取内部值的解封装方法:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>    pub const fn into_inner(self) -&gt; T {
+        //解封装
+        self.value.into_inner()
+    }
+}
+
+impl&lt;T: Default&gt; Cell&lt;T&gt; {
+    //take后，变量所有权已经转移出来
+    pub fn take(&amp;self) -&gt; T {
+        self.replace(Default::default())
+    }
+}
+
+impl&lt;T: Copy&gt; Cell&lt;T&gt; {
+    pub fn get(&amp;self) -&gt; T {
+        //只适合于Copy Trait类型，否则会导致所有权转移，引发UB
+        unsafe { *self.value.get() }
+    }
+<span class="boring">}</span></code></pre></pre>
+<p>对函数式编程支持的方法</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>    //函数式编程，因为T支持Copy，所以没有所有权问题 
+    pub fn update&lt;F&gt;(&amp;self, f: F) -&gt; T
+    where
+        F: FnOnce(T) -&gt; T,
+    {
+        let old = self.get();
+        let new = f(old);
+        self.set(new);
+        new
+    }
+}
+
+<span class="boring">}</span></code></pre></pre>
+<p>获取内部变量指针的方法：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: ?Sized&gt; Cell&lt;T&gt; {
+    //通常应该不使用这个机制，安全隐患非常大
+    pub const fn as_ptr(&amp;self) -&gt; *mut T {
+        self.value.get()
+    }
+    //获取内部的可变引用，调用这个函数会占用&amp;mut self，
+    //需要等到返回值生命周期结束才能释放。
+    pub fn get_mut(&amp;mut self) -&gt; &amp;mut T {
+        self.value.get_mut()
+    }
+
+    pub fn from_mut(t: &amp;mut T) -&gt; &amp;Cell&lt;T&gt; {
+        // 利用repr[transparent]直接做转换
+        unsafe { &amp;*(t as *mut T as *const Cell&lt;T&gt;) }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>切片类型相关方法</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//Unsized Trait实现
+impl&lt;T: CoerceUnsized&lt;U&gt;, U&gt; CoerceUnsized&lt;Cell&lt;U&gt;&gt; for Cell&lt;T&gt; {}
+
+impl&lt;T&gt; Cell&lt;[T]&gt; {
+    pub fn as_slice_of_cells(&amp;self) -&gt; &amp;[Cell&lt;T&gt;] {
+        // 粗暴的直接转换
+        unsafe { &amp;*(self as *const Cell&lt;[T]&gt; as *const [Cell&lt;T&gt;]) }
+    }
+}
+
+impl&lt;T, const N: usize&gt; Cell&lt;[T; N]&gt; {
+    pub fn as_array_of_cells(&amp;self) -&gt; &amp;[Cell&lt;T&gt;; N] {
+        // 粗暴的直接转换
+        unsafe { &amp;*(self as *const Cell&lt;[T; N]&gt; as *const [Cell&lt;T&gt;; N]) }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p><code>Cell&lt;T&gt;</code>仅对支持Send的T支持Send trait</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//按规则，此处代码可以不写，但估计可以减轻编译器负担或编译器有额外要求。
+unsafe impl&lt;T: ?Sized&gt; Send for Cell&lt;T&gt; where T: Send {}
+
+//按规则也可以不写，但估计可以减轻编译器负担或编译器有额外要求
+unsafe impl&lt;T:?Sized&gt; !Sync for Cell&lt;T&gt; {}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="refcellt-代码分析"><a class="header" href="#refcellt-代码分析"><code>RefCell&lt;T&gt;</code> 代码分析</a></h3>
+<p><code>RefCell&lt;T&gt;</code>设计的思路：</p>
+<ol>
+<li>基本类型RefCell，负责存储内部可变的变量及计数器</li>
+<li>Ref类型, 作为执行borrow()后生成的返回结果，通过解引用可以直接获得内部变量的引用，drop调用时会减少计数器不可变引用计数</li>
+<li>RefMut类型, 作为执行borrow_mut()后生成的返回结构，通过解引用可以直接获得内部变量的可变引用，对内部变量进行修改。drop调用时会减少计数器可变引用计数</li>
+<li>不采用在Ref及RefMut中包含&amp;RefCell的方式来实现对RefCell内部计数器的操作，这样在逻辑上有些混乱</li>
+<li>单独设计BorrowRef作为Ref计数器的借用类型，目的是利用此类型的drop函数完成对RefCell中计数器的不可变借用计数操作</li>
+<li>单独设计BorrowRefMut作为RefMut计数器的借用类型，目的是利用此类型的drop函数完成对RefCell中计数器的可变借用计数器操作</li>
+</ol>
+<p>以下为RefCell<T>类型相关的结构， 删除了一些和debug相关的内容，使代码简化及理解简单</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct RefCell&lt;T: ?Sized&gt; {
+    //用以标识对外是否有可变引用，是否有不可变引用，有多少个不可变引用
+    //是引用计数的实现体
+    borrow: Cell&lt;BorrowFlag&gt;,
+    //包装内部的变量
+    value: UnsafeCell&lt;T&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>引用计数类型BorrowFlag的定义：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 正整数表示RefCell执行borrow()调用
+// 生成的不可变引用&quot;Ref&quot;的数目
+//
+// 负整数表示RefCell执行borrow_mut()调用
+// 生成的可变引用&quot;RefMut&quot;的数目
+//
+// 多个RefMut存在的条件是在多个RefMut指向
+// 同一个&quot;RefCell&quot;的不同部分的情况，如多个
+// RefMut指向一个slice的不重合的部分。
+type BorrowFlag = isize;
+// 0表示没有执行过borrow()或borrow_mut()调用
+const UNUSED: BorrowFlag = 0;
+
+//有borrow_mut()被执行且生命周期没有终结
+fn is_writing(x: BorrowFlag) -&gt; bool {
+    x &lt; UNUSED
+}
+
+//有borrow()被执行且生命周期没有终结
+fn is_reading(x: BorrowFlag) -&gt; bool {
+    x &gt; UNUSED
+}
+<span class="boring">}</span></code></pre></pre>
+<p><code>RefCell&lt;T&gt;</code>创建方法：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T&gt; RefCell&lt;T&gt; {
+    pub const fn new(value: T) -&gt; RefCell&lt;T&gt; {
+        RefCell {
+            value: UnsafeCell::new(value),
+            //初始化一定是UNUSED
+            borrow: Cell::new(UNUSED),
+        }
+    }
+<span class="boring">}</span></code></pre></pre>
+<p>解封装方法：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span>
+<span class="boring">fn main() {
+</span>    //实际会消费RefCell，并将内部变量返回，因为Ref及RefMut有PhantomData
+    //所以，存在borrow及borrow_mut时，调用此方法会编译出错，没有安全问题。
+    pub const fn into_inner(self) -&gt; T {
+        self.value.into_inner()
+    }
+<span class="boring">}</span></code></pre></pre>
+<h4 id="borrow相关的结构及代码"><a class="header" href="#borrow相关的结构及代码">borrow()相关的结构及代码</a></h4>
+<p><code>RefCell&lt;T&gt;</code>borrow()的代码：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: ?Sized&gt; RefCell&lt;T&gt; {
+    //Borrow Trait实现, 返回Ref&lt;`a, T&gt;类型变量，见下面分析
+    pub fn borrow(&amp;self) -&gt; Ref&lt;'_, T&gt; {
+        //真正是try_borrow()
+        self.try_borrow().expect(&quot;already mutably borrowed&quot;)
+    }
+    //不可变引用 borrow真正实现
+    pub fn try_borrow(&amp;self) -&gt; Result&lt;Ref&lt;'_, T&gt;, BorrowError&gt; {
+        match BorrowRef::new(&amp;self.borrow) {
+            Some(b) =&gt; {
+                // 保证了self.borrow一定是is_reading()为真，直接从裸指针
+                //转换，对RUST来讲，转换后的引用与原变量没有内存安全的联系。
+                // 从这个函数看，RefCell&lt;T&gt;应该尽量使用RefCell的方法操作，除非绝对把握
+                // 不要直接将内部变量的正常引用导出，否则安全隐患巨大。
+                // 这里返回的Ref变量的生命周期不能长于self，*self.value.get()本身没有生命周期
+                // &amp;*self.value.get()加入了生命周期，而这个生命周期受到函数生命周期语法的限制
+                // 从而返回值的生命周期小于了self的生命周期。这是RUST生命周期的一个重要规则。不安全
+                // 由此进入安全
+                Ok(Ref { value: unsafe { &amp;*self.value.get() }, borrow: b })
+            }
+            None =&gt; Err(BorrowError {
+                
+            }),
+        }
+    }
+    ...
+}
+<span class="boring">}</span></code></pre></pre>
+<p><code>Ref&lt;'b, T&gt;</code>相关类型结构：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//RefCell&lt;T&gt; borrow()调用获取的类型
+pub struct Ref&lt;'b, T: ?Sized + 'b&gt; {
+    //对RefCell&lt;T&gt;中value的引用
+    value: &amp;'b T,
+    //对RefCell&lt;T&gt;中borrow引用的封装
+    borrow: BorrowRef&lt;'b&gt;,
+}
+
+//Deref将获得内部value
+impl&lt;T: ?Sized&gt; Deref for Ref&lt;'_, T&gt; {
+    type Target = T;
+
+    fn deref(&amp;self) -&gt; &amp;T {
+        self.value
+    }
+}
+
+<span class="boring">}</span></code></pre></pre>
+<p>针对不可变借用的计数逻辑实现类型</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//对RefCell&lt;T&gt;中成员变量borrow的引用封装类型
+struct BorrowRef&lt;'b&gt; {
+    borrow: &amp;'b Cell&lt;BorrowFlag&gt;,
+}
+
+impl&lt;'b&gt; BorrowRef&lt;'b&gt; {
+    //每次new，代表对RefCell&lt;T&gt;产生了borrow()调用，需增加不可变引用计数
+    fn new(borrow: &amp;'b Cell&lt;BorrowFlag&gt;) -&gt; Option&lt;BorrowRef&lt;'b&gt;&gt; {
+        // 引用计数加1，
+        let b = borrow.get().wrapping_add(1);
+        if !is_reading(b) {
+            // 1.如果有borrow_mut()调用且生命周期没有终结
+            // 2.如果到达isize::MAX
+            None
+        } else {
+            // 增加一个不可变借用计数:
+            borrow.set(b);
+            Some(BorrowRef { borrow })
+        }
+    }
+}
+
+// Drop，代表对RefCell&lt;T&gt;的borrow()调用的返回变量生命周期结束，需减少不可变引用计数
+impl Drop for BorrowRef&lt;'_&gt; {
+    fn drop(&amp;mut self) {
+        let borrow = self.borrow.get();
+        //一定应该是正整数
+        debug_assert!(is_reading(borrow));
+        //不可变引用计数减一
+        self.borrow.set(borrow - 1);
+    }
+}
+impl Clone for BorrowRef&lt;'_&gt; {
+    //每次clone实际上增加了一次RefCell&lt;T&gt;的不可变引用，
+    fn clone(&amp;self) -&gt; Self {
+        //不可变引用计数加1
+        let borrow = self.borrow.get();
+        debug_assert!(is_reading(borrow));
+        assert!(borrow != isize::MAX);
+        self.borrow.set(borrow + 1);
+        BorrowRef { borrow: self.borrow }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>对Ref结构的方法：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;'b, T: ?Sized&gt; Ref&lt;'b, T&gt; {
+    /// 与再执行RefCell&lt;T&gt;::borrow等价。但用clone可以在不必有RefCell&lt;T&gt;的情况下增加引用
+    /// 不选择实现Clone Trait，是因为要用RefCell&lt;T&gt;.borrow().clone()来复制
+    /// RefCell&lt;T&gt;
+    pub fn clone(orig: &amp;Ref&lt;'b, T&gt;) -&gt; Ref&lt;'b, T&gt; {
+        Ref { value: orig.value, borrow: orig.borrow.clone() }
+    }
+
+    //通常的情况下，F的返回引用与Ref中的引用是强相关的，即获得返回引用等同于获得Ref中value的引用
+    pub fn map&lt;U: ?Sized, F&gt;(orig: Ref&lt;'b, T&gt;, f: F) -&gt; Ref&lt;'b, U&gt;
+    where
+        F: FnOnce(&amp;T) -&gt; &amp;U,
+    {
+        Ref { value: f(orig.value), borrow: orig.borrow }
+    }
+
+    //同上，例如value是一个切片引用，filter后获得切片的一部分
+    pub fn filter_map&lt;U: ?Sized, F&gt;(orig: Ref&lt;'b, T&gt;, f: F) -&gt; Result&lt;Ref&lt;'b, U&gt;, Self&gt;
+    where
+        F: FnOnce(&amp;T) -&gt; Option&lt;&amp;U&gt;,
+    {
+        match f(orig.value) {
+            Some(value) =&gt; Ok(Ref { value, borrow: orig.borrow }),
+            None =&gt; Err(orig),
+        }
+    }
+
+    /// leak调用后，此Ref不再调用drop，从而导致RefCell中的计数器无法恢复原状，也会导致可变引用无法再被创建 
+    pub fn leak(orig: Ref&lt;'b, T&gt;) -&gt; &amp;'b T {
+        mem::forget(orig.borrow);
+        orig.value
+    }
+}
+
+impl&lt;'b, T: ?Sized + Unsize&lt;U&gt;, U: ?Sized&gt; CoerceUnsized&lt;Ref&lt;'b, U&gt;&gt; for Ref&lt;'b, T&gt; {}
+<span class="boring">}</span></code></pre></pre>
+<h4 id="borrow_mut-相关结构及代码"><a class="header" href="#borrow_mut-相关结构及代码">borrow_mut() 相关结构及代码</a></h4>
+<p><code>RefCell&lt;T&gt;</code>的borrow_mut()代码：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span>
+<span class="boring">fn main() {
+</span>impl&lt;T: ?Sized&gt; RefCell&lt;T&gt; {
+    //BorrowMut Trait实现,返回RefMut&lt;`a, T&gt;类型变量
+    pub fn borrow_mut(&amp;self) -&gt; RefMut&lt;'_, T&gt; {
+        self.try_borrow_mut().expect(&quot;already borrowed&quot;)
+    }
+
+    pub fn try_borrow_mut(&amp;self) -&gt; Result&lt;RefMut&lt;'_, T&gt;, BorrowMutError&gt; {
+        match BorrowRefMut::new(&amp;self.borrow) {
+            Some(b) =&gt; {
+                // 一定不存在非可变引用，也仅有本次的可变引用，这个可变引用直接从
+                // 裸指针转换，对RUST编译器，转换后的可变引用与原变量没有内存安全的联系。
+                Ok(RefMut { value: unsafe { &amp;mut *self.value.get() }, borrow: b })
+            }
+            None =&gt; Err(BorrowMutError {
+                
+            }),
+        }
+    }
+    ...
+}
+<span class="boring">}</span></code></pre></pre>
+<p>从RefCell<T> borrow_mut返回的结构体<br />
+<code>RefMut&lt;'b, T&gt;</code>结构代码：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct RefMut&lt;'b, T: ?Sized + 'b&gt; {
+    //可变引用
+    value: &amp;'b mut T,
+    //计数器
+    borrow: BorrowRefMut&lt;'b&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><code>BorrowRefMut&lt;T&gt;</code>结构及逻辑:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//作用与BorrowRef相同
+struct BorrowRefMut&lt;'b&gt; {
+    borrow: &amp;'b Cell&lt;BorrowFlag&gt;,
+}
+
+//RefMut生命周期终止时调用
+impl Drop for BorrowRefMut&lt;'_&gt; {
+    fn drop(&amp;mut self) {
+        //可变引用计数减一(数学运算为加)
+        let borrow = self.borrow.get();
+        debug_assert!(is_writing(borrow));
+        self.borrow.set(borrow + 1);
+    }
+}
+
+impl&lt;'b&gt; BorrowRefMut&lt;'b&gt; {
+    fn new(borrow: &amp;'b Cell&lt;BorrowFlag&gt;) -&gt; Option&lt;BorrowRefMut&lt;'b&gt;&gt; {
+        //初始的borrow_mut，引用计数必须是0，不存在其他可变引用
+        match borrow.get() {
+            UNUSED =&gt; {
+                borrow.set(UNUSED - 1);
+                Some(BorrowRefMut { borrow })
+            }
+            _ =&gt; None,
+        }
+    }
+
+    // 不通过RefCell获取新的RefMut的方法，对于新的RefMut，
+    // 必须是一个整体的可变引用分为几个组成部分的可变引用，
+    // 如结构体成员，或数组成员。且可变引用之间互相不重合，
+    // 不允许两个可变引用能修改同一块内存
+    fn clone(&amp;self) -&gt; BorrowRefMut&lt;'b&gt; {
+        //不可变引用计数增加(算数减)
+        let borrow = self.borrow.get();
+        debug_assert!(is_writing(borrow));
+        // Prevent the borrow counter from underflowing.
+        assert!(borrow != isize::MIN);
+        self.borrow.set(borrow - 1);
+        BorrowRefMut { borrow: self.borrow }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>RefMut的代码：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//Deref后返回内部变量的引用
+impl&lt;T: ?Sized&gt; Deref for RefMut&lt;'_, T&gt; {
+    type Target = T;
+
+    fn deref(&amp;self) -&gt; &amp;T {
+        self.value
+    }
+}
+//DerefMut返回内部变量可变引用
+impl&lt;T: ?Sized&gt; DerefMut for RefMut&lt;'_, T&gt; {
+    fn deref_mut(&amp;mut self) -&gt; &amp;mut T {
+        self.value
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h4 id="refcellt-其他方法"><a class="header" href="#refcellt-其他方法"><code>RefCell&lt;T&gt;</code> 其他方法</a></h4>
+<p>改变内部值的方法：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span>
+<span class="boring">fn main() {
+</span>impl&lt;T: ?Sized&gt; RefCell&lt;T&gt; {
+    //将原有内部变量替换为新值，既然是RefCell, 通常应使用borrow_mut
+    //获得可变引用，再对值做修改，下面函数实际也是用borrow_mut完成，
+    //但更多应该是用在泛型中
+    pub fn replace(&amp;self, t: T) -&gt; T {
+        mem::replace(&amp;mut *self.borrow_mut(), t)
+    }
+
+    //同上，只是用函数获取新值
+    pub fn replace_with&lt;F: FnOnce(&amp;mut T) -&gt; T&gt;(&amp;self, f: F) -&gt; T {
+        let mut_borrow = &amp;mut *self.borrow_mut();
+        let replacement = f(mut_borrow);
+        mem::replace(mut_borrow, replacement)
+    }
+
+    //两个引用交换值，也交换了值的所有权
+    pub fn swap(&amp;self, other: &amp;Self) {
+        mem::swap(&amp;mut *self.borrow_mut(), &amp;mut *other.borrow_mut())
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>直接获取内部变量指针：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>    //此函数如果没有绝对的安全把握，不要用
+    pub fn as_ptr(&amp;self) -&gt; *mut T {
+        self.value.get()
+    }
+
+    //此函数如果没有绝对的安全把握，不要用
+    pub fn get_mut(&amp;mut self) -&gt; &amp;mut T {
+        self.value.get_mut()
+    }
+<span class="boring">}</span></code></pre></pre>
+<p>其他方法：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>    //在leak操作后，做leak的逆操作，实际上对计数器进行了恢复，
+    pub fn undo_leak(&amp;mut self) -&gt; &amp;mut T {
+        *self.borrow.get_mut() = UNUSED;
+        self.get_mut()
+    }
+
+    //规避计数器计数的方法，与borrow操作近似
+    pub unsafe fn try_borrow_unguarded(&amp;self) -&gt; Result&lt;&amp;T, BorrowError&gt; {
+        //如果没有borrow_mut(),则返回引用
+        if !is_writing(self.borrow.get()) {
+            Ok(unsafe { &amp;*self.value.get() })
+        } else {
+            Err(BorrowError {
+            })
+        }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>内部值获取方法：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: Default&gt; RefCell&lt;T&gt; {
+    //对RefCell&lt;T&gt;应该不使用这个函数，尤其是在有borrow()/borrow_mut()
+    //且生命周期没有终结时
+    pub fn take(&amp;self) -&gt; T {
+        self.replace(Default::default())
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>系统编译器内嵌trait实现：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//支持线程间转移
+unsafe impl&lt;T: ?Sized&gt; Send for RefCell&lt;T&gt; where T: Send {}
+//不支持线程间共享
+impl&lt;T: ?Sized&gt; !Sync for RefCell&lt;T&gt; {}
+
+impl&lt;T: Clone&gt; Clone for RefCell&lt;T&gt; {
+    //clone实际上仅仅是增加计数
+    fn clone(&amp;self) -&gt; RefCell&lt;T&gt; {
+        //self.borrow().clone 实质是((*self.borrow()).clone)
+        //连续解引用后做clone的调用
+        //Ref&lt;T&gt;不支持Clone，所以解引用的到&amp;T        
+        RefCell::new(self.borrow().clone())
+    }
+
+    fn clone_from(&amp;mut self, other: &amp;Self) {
+        //self.get_mut().clone_from 实质是
+        // (*self.get_mut()).clone_from()
+        // &amp;mut T不支持Clone，所以解引用到T
+        self.get_mut().clone_from(&amp;other.borrow())
+    }
+}
+
+impl&lt;T: Default&gt; Default for RefCell&lt;T&gt; {
+    fn default() -&gt; RefCell&lt;T&gt; {
+        RefCell::new(Default::default())
+    }
+}
+
+impl&lt;T: ?Sized + PartialEq&gt; PartialEq for RefCell&lt;T&gt; {
+    fn eq(&amp;self, other: &amp;RefCell&lt;T&gt;) -&gt; bool {
+        *self.borrow() == *other.borrow()
+    }
+}
+
+impl&lt;T&gt; const From&lt;T&gt; for RefCell&lt;T&gt; {
+    fn from(t: T) -&gt; RefCell&lt;T&gt; {
+        RefCell::new(t)
+    }
+}
+
+impl&lt;T: CoerceUnsized&lt;U&gt;, U&gt; CoerceUnsized&lt;RefCell&lt;U&gt;&gt; for RefCell&lt;T&gt; {}
+<span class="boring">}</span></code></pre></pre>
+<p>RefCell<T>的代码实现，是理解RUST解决问题的思维的好例子。 编程中，RefCell的计数器是针对RUST语法的一个精巧的设计，利用drop的自动调用，编程只需要关注new，这就节省了程序员极大的精力，也规避了错误的发生。borrow_mut()机制则解决了多个可修改借用。
+利用RUST的非安全个性和自动drop的机制，可以自行设计出RefCell<T>这样的标准库解决方案，而不是借助于编译器。这是RUST的一个突出特点，也是其能与C一样成为系统级语言的原因。</p>
+<h2 id="pin及unpin"><a class="header" href="#pin及unpin">Pin及UnPin</a></h2>
+<p>Pin<T>主要解决需要程序员在编程时要时刻注意处理可能的变量地址改变的情况。利用Pin<T>，程序员只需要在初始的时候注意到这个场景并定义好。后继就可以不必再关心。
+Pin是一个对指针&amp;mut T的包装结构，包装后因为&amp;mut T的独占性。封装结构外，不可能再存在变量的引用及不可变引用。所有的引用都只能使用Pin<T>来完成，导致RUST的需要引用的一些内存操作无法进行，如实质上是指针交换的调用mem::swap，从而保证了指针指向的变量在代码中会被固定在某个内存位置。当然，编译器也不会再做优化。</p>
+<p>实现Unpin Trait的类型不受Pin的约束，RUST中实现Copy trait的类型基本上都实现了Unpin Trait。
+结构定义</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[repr(transparent)]
+#[derive(Copy, Clone)]
+pub struct Pin&lt;P&gt; {
+    pointer: P,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>Pin变量创建：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;P: Deref&lt;Target: Unpin&gt;&gt; Pin&lt;P&gt; {
+    // 支持Unpin类型可以用new创建Pin&lt;T&gt;
+    pub const fn new(pointer: P) -&gt; Pin&lt;P&gt; {
+        unsafe { Pin::new_unchecked(pointer) }
+    }
+    ...
+}
+
+impl&lt;P: Deref&gt; Pin&lt;P&gt; {
+    //实现Deref的类型，用下面的行为创建Pin&lt;T&gt;, 调用者应该保证P可以被Pin，
+    pub const unsafe fn new_unchecked(pointer: P) -&gt; Pin&lt;P&gt; {
+        Pin { pointer }
+    }
+    ...
+}
+<span class="boring">}</span></code></pre></pre>
+<p>Pin自身的new方法仅针对Pin实际上不起作用的Unpin类型。对于其他不支持Unpin的类型，通常使用智能指针提供的Pin创建方法，如Boxed::pin。
+new_unchecked则提供给其他智能指针的安全的创建方法内部使用。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl &lt;P: Deref&lt;Target: Unpin&gt;&gt; Pin&lt;P&gt; {
+    ...
+    /// 解封装，取消内存pin操作
+    pub const fn into_inner(pin: Pin&lt;P&gt;) -&gt; P {
+        pin.pointer
+    }
+}
+
+impl &lt;P:Deref&gt; Pin&lt;P&gt; {
+    ...
+    
+    //对应于new_unchecked
+    pub const unsafe fn into_inner_unchecked(pin: Pin&lt;P&gt;) -&gt; P {
+        pin.pointer
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>指针转换</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;P: Deref&gt; Pin&lt;P&gt; {
+    ...
+    /// 需要返回一个Pin的引用，以为P自身就是指针，返回P是
+    /// 不合理及不安全的，所以此函数被用来返回Pin住的解引
+    /// 用的指针类型
+    pub fn as_ref(&amp;self) -&gt; Pin&lt;&amp;P::Target&gt; {
+        // SAFETY: see documentation on this function
+        unsafe { Pin::new_unchecked(&amp;*self.pointer) }
+    }
+}
+impl &lt;P:DerefMut&gt; Pin&lt;P&gt; { 
+    ...  
+    /// 需要返回一个Pin的可变引用，以为P自身就是指针，
+    /// 所以此函数被用来返回Pin住的解引用的指针类型
+    pub fn as_mut(&amp;mut self) -&gt; Pin&lt;&amp;mut P::Target&gt; {
+        unsafe { Pin::new_unchecked(&amp;mut *self.pointer) }
+    }
+}
+impl &lt;'a, T:?Sized&gt; Pin&lt;&amp;'a T&gt; {
+    //&amp;T 不会导致在安全RUST领域的类如mem::replace之类的地址改变操作
+    pub const fn get_ref(self) -&gt; &amp;'a T {
+        self.pointer
+    }
+}
+
+impl&lt;'a, T: ?Sized&gt; Pin&lt;&amp;'a mut T&gt; {
+    //不可变引用可以随意返回，不会影响Pin的语义
+    pub const fn into_ref(self) -&gt; Pin&lt;&amp;'a T&gt; {
+        Pin { pointer: self.pointer }
+    }
+
+    //Unpin的可变引用可以返回，Pin对Unpin类型无作用
+    pub const fn get_mut(self) -&gt; &amp;'a mut T
+    where
+        T: Unpin,
+    {
+        self.pointer
+    }
+
+    //后门，要确定安全，会导致Pin失效
+    pub const unsafe fn get_unchecked_mut(self) -&gt; &amp;'a mut T {
+        self.pointer
+    }
+    ...
+}
+
+impl&lt;T: ?Sized&gt; Pin&lt;&amp;'static T&gt; {
+    pub const fn static_ref(r: &amp;'static T) -&gt; Pin&lt;&amp;'static T&gt; {
+        unsafe { Pin::new_unchecked(r) }
+    }
+}
+
+impl&lt;'a, P: DerefMut&gt; Pin&lt;&amp;'a mut Pin&lt;P&gt;&gt; {
+    pub fn as_deref_mut(self) -&gt; Pin&lt;&amp;'a mut P::Target&gt; {
+        unsafe { self.get_unchecked_mut() }.as_mut()
+    }
+}
+
+impl&lt;T: ?Sized&gt; Pin&lt;&amp;'static mut T&gt; {
+    pub const fn static_mut(r: &amp;'static mut T) -&gt; Pin&lt;&amp;'static mut T&gt; {
+        // SAFETY: The 'static borrow guarantees the data will not be
+        // moved/invalidated until it gets dropped (which is never).
+        unsafe { Pin::new_unchecked(r) }
+    }
+}
+
+impl&lt;P: Deref&gt; Deref for Pin&lt;P&gt; {
+    type Target = P::Target;
+    fn deref(&amp;self) -&gt; &amp;P::Target {
+        Pin::get_ref(Pin::as_ref(self))
+    }
+}
+//只有Unpin才支持对mut的DerefMut trait，不支持Unpin的，
+//不能用DerefMut，以保证Pin
+impl&lt;P: DerefMut&lt;Target: Unpin&gt;&gt; DerefMut for Pin&lt;P&gt; {
+    fn deref_mut(&amp;mut self) -&gt; &amp;mut P::Target {
+        Pin::get_mut(Pin::as_mut(self))
+    }
+}
+
+<span class="boring">}</span></code></pre></pre>
+<p>内部可变性函数：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl &lt;P:DerefMut&gt; Pin&lt;P&gt; {
+    //修改值，实质也提供了内部可变性
+    pub fn set(&amp;mut self, value: P::Target)
+    where
+        P::Target: Sized,
+    {
+        *(self.pointer) = value;
+    }
+}
+
+impl&lt;'a, T: ?Sized&gt; Pin&lt;&amp;'a T&gt; {
+    //函数式编程，func返回的pointer与self.pointer应该强相关，如结构中
+    //某一变量的引用，或slice中某一元素的引用
+    pub unsafe fn map_unchecked&lt;U, F&gt;(self, func: F) -&gt; Pin&lt;&amp;'a U&gt;
+    where
+        U: ?Sized,
+        F: FnOnce(&amp;T) -&gt; &amp;U,
+    {
+        let pointer = &amp;*self.pointer;
+        let new_pointer = func(pointer);
+
+        // SAFETY: the safety contract for `new_unchecked` must be
+        // upheld by the caller.
+        unsafe { Pin::new_unchecked(new_pointer) }
+    }
+
+}
+
+impl&lt;'a, T: ?Sized&gt; Pin&lt;&amp;'a mut T&gt; {
+    
+    pub unsafe fn map_unchecked_mut&lt;U, F&gt;(self, func: F) -&gt; Pin&lt;&amp;'a mut U&gt;
+    where
+        U: ?Sized,
+        F: FnOnce(&amp;mut T) -&gt; &amp;mut U,
+    {
+        // 这个可能导致Pin住的内容移动，调用者要保证不出问题
+        let pointer = unsafe { Pin::get_unchecked_mut(self) };
+        let new_pointer = func(pointer);
+        unsafe { Pin::new_unchecked(new_pointer) }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>利用Pin的封装及基于trait约束的方法实现，使得指针pin在内存中的需求得以实现。是RUST利用封装语义完成语言需求的又一经典案例</p>
+<h2 id="lazy分析"><a class="header" href="#lazy分析">Lazy<T>分析</a></h2>
+<p>OnceCell是一种内部可变的类型，其用于初始化没有初始值，仅支持赋值一次的类型。
+Once一般用于支持全局静态变量。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct OnceCell&lt;T&gt; {
+    // Option&lt;T&gt;支持None作为初始化的值
+    inner: UnsafeCell&lt;Option&lt;T&gt;&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>OnceCell封装UnsafeCell以支持内部可变性。
+创建方法:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T&gt; const From&lt;T&gt; for OnceCell&lt;T&gt; {
+    fn from(value: T) -&gt; Self {
+        OnceCell { inner: UnsafeCell::new(Some(value)) }
+    }
+}
+impl&lt;T&gt; OnceCell&lt;T&gt; {
+    /// 初始化为空，支持静态全局变量初始化
+    pub const fn new() -&gt; OnceCell&lt;T&gt; {
+        //注意，此时给UnsafeCell分配T类型的地址空间
+        OnceCell { inner: UnsafeCell::new(None) }
+    }
+<span class="boring">}</span></code></pre></pre>
+<p>获取内部引用</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>    pub fn get(&amp;self) -&gt; Option&lt;&amp;T&gt; {
+        // 生成一个内部变量的引用，
+        unsafe { &amp;*self.inner.get() }.as_ref()
+    }
+
+    /// 直接用返回结果取可以&amp;mut T，然后再解封装后用可变引用即
+    /// 可改变内部封装变量的值，会突破只赋值一次的既定语义，
+    /// 此函数最好不使用
+    pub fn get_mut(&amp;mut self) -&gt; Option&lt;&amp;mut T&gt; {
+        unsafe { &amp;mut *self.inner.get() }.as_mut()
+    }
+<span class="boring">}</span></code></pre></pre>
+<p>对内部值进行修改方法：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>    /// 通过此函数仅能给OnceCell内部变量做一次赋值
+    pub fn set(&amp;self, value: T) -&gt; Result&lt;(), T&gt; {
+        // SAFETY: Safe because we cannot have overlapping mutable borrows
+        let slot = unsafe { &amp;*self.inner.get() };
+        if slot.is_some() {
+            return Err(value);
+        }
+
+        let slot = unsafe { &amp;mut *self.inner.get() };
+        *slot = Some(value);
+        Ok(())
+    }
+
+    //见下面函数
+    pub fn get_or_init&lt;F&gt;(&amp;self, f: F) -&gt; &amp;T
+    where
+        F: FnOnce() -&gt; T,
+    {
+        //Ok::&lt;T,!&gt;(f()) 即Result类型初始化，例如Ok::&lt;i32,!&gt;(3)
+        match self.get_or_try_init(|| Ok::&lt;T, !&gt;(f())) {
+            Ok(val) =&gt; val,
+        }
+    }
+
+    //有值就返回值，没有值用f生成值
+    pub fn get_or_try_init&lt;F, E&gt;(&amp;self, f: F) -&gt; Result&lt;&amp;T, E&gt;
+    where
+        F: FnOnce() -&gt; Result&lt;T, E&gt;,
+    {
+        if let Some(val) = self.get() {
+            return Ok(val);
+        }
+        /// 下面代码关键是cold, 防止优化后的代码出现意外，因为此函数会被多次调用
+        /// 这是一个较冷门的知识点
+        #[cold]
+        fn outlined_call&lt;F, T, E&gt;(f: F) -&gt; Result&lt;T, E&gt;
+        where
+            F: FnOnce() -&gt; Result&lt;T, E&gt;,
+        {
+            f()
+        }
+        let val = outlined_call(f)?;
+        assert!(self.set(val).is_ok(), &quot;reentrant init&quot;);
+        Ok(self.get().unwrap())
+    }
+<span class="boring">}</span></code></pre></pre>
+<p>解封装方法：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>    //消费了OnceCell,并且返回内部变量
+    pub fn into_inner(self) -&gt; Option&lt;T&gt; {
+        self.inner.into_inner()
+    }
+
+    //替换OnceCell，并将替换的OnceCell消费掉，并且返回内部变量
+    pub fn take(&amp;mut self) -&gt; Option&lt;T&gt; {
+        mem::take(self).into_inner()
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>OnceCell<T>对trait的实现：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T&gt; Default for OnceCell&lt;T&gt; {
+    fn default() -&gt; Self {
+        Self::new()
+    }
+}
+
+impl&lt;T: Clone&gt; Clone for OnceCell&lt;T&gt; {
+    fn clone(&amp;self) -&gt; OnceCell&lt;T&gt; {
+        let res = OnceCell::new();
+        if let Some(value) = self.get() {
+            match res.set(value.clone()) {
+                Ok(()) =&gt; (),
+                Err(_) =&gt; unreachable!(),
+            }
+        }
+        res
+    }
+}
+
+impl&lt;T: PartialEq&gt; PartialEq for OnceCell&lt;T&gt; {
+    fn eq(&amp;self, other: &amp;Self) -&gt; bool {
+        self.get() == other.get()
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>基于OnceCell<T>实现惰性结构Lazy<T>,惰性结构在第一次调用解引用的时候被赋值，随后使用这个值。
+此结构强迫代码区分初始化必须有值及不必赋值的情况。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// 惰性类型，在第一次使用时进行赋值和初始化
+pub struct Lazy&lt;T, F = fn() -&gt; T&gt; {
+    //初始化可以为空
+    cell: OnceCell&lt;T&gt;,
+    //对cell做初始化赋值的函数
+    init: Cell&lt;Option&lt;F&gt;&gt;,
+}
+
+impl&lt;T, F&gt; Lazy&lt;T, F&gt; {
+    /// 函数作为变量被保存
+    pub const fn new(init: F) -&gt; Lazy&lt;T, F&gt; {
+        Lazy { cell: OnceCell::new(), init: Cell::new(Some(init)) }
+    }
+}
+
+impl&lt;T, F: FnOnce() -&gt; T&gt; Lazy&lt;T, F&gt; {
+    //完成赋值操作
+    pub fn force(this: &amp;Lazy&lt;T, F&gt;) -&gt; &amp;T {
+        //如果cell为空，则用init作初始化赋值，注意这里init的take调用已经将init替换成None，
+        this.cell.get_or_init(|| match this.init.take() {
+            Some(f) =&gt; f(),
+            None =&gt; panic!(&quot;`Lazy` instance has previously been poisoned&quot;),
+        })
+    }
+}
+
+//在对Lazy解引用时才进行赋值操作
+impl&lt;T, F: FnOnce() -&gt; T&gt; Deref for Lazy&lt;T, F&gt; {
+    type Target = T;
+    fn deref(&amp;self) -&gt; &amp;T {
+        Lazy::force(self)
+    }
+}
+
+impl&lt;T: Default&gt; Default for Lazy&lt;T&gt; {
+    /// Creates a new lazy value using `Default` as the initializing function.
+    fn default() -&gt; Lazy&lt;T&gt; {
+        Lazy::new(T::default)
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="小结"><a class="header" href="#小结">小结</a></h2>
+<p>从内部可变类型，以及前面的NonNull<T>, Unique<T>, NonZeroSize<T>,都是典型的由不安全类型到安全类型的实现例。</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="06-基本类型续.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a rel="next" href="08-智能指针类型(一).html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="06-基本类型续.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next" href="08-智能指针类型(一).html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+        <script>
+            window.playground_copyable = true;
+        </script>
+        <script src="elasticlunr.min.js" charset="utf-8"></script>
+        <script src="mark.min.js" charset="utf-8"></script>
+        <script src="searcher.js" charset="utf-8"></script>
+        <script src="clipboard.min.js" charset="utf-8"></script>
+        <script src="highlight.js" charset="utf-8"></script>
+        <script src="book.js" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+    </body>
+</html>

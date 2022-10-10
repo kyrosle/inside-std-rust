@@ -1,0 +1,1305 @@
+<!DOCTYPE HTML>
+<html lang="zh-cn" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>智能指针类型(四) - rust-inside-std-book</title>
+        <!-- Custom HTML head -->
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="index.html">README</a></li><li class="chapter-item expanded affix "><a href="引言.html">引言</a></li><li class="chapter-item expanded affix "><a href="01-RUST库体系概述.html">RUST库体系概述</a></li><li class="chapter-item expanded affix "><a href="02-内存.html">内存</a></li><li class="chapter-item expanded affix "><a href="03-固有函数库及基础类型.html">固有函数库及基础类型</a></li><li class="chapter-item expanded affix "><a href="04-基础Trait.html">基础Trait</a></li><li class="chapter-item expanded affix "><a href="05-Iterator.html">Iterator</a></li><li class="chapter-item expanded affix "><a href="06-基本类型续.html">基本类型续</a></li><li class="chapter-item expanded affix "><a href="07-内部可变性类型.html">内部可变性类型</a></li><li class="chapter-item expanded affix "><a href="08-智能指针类型(一).html">智能指针类型(一)</a></li><li class="chapter-item expanded affix "><a href="09-智能指针类型(二).html">智能指针类型(二)</a></li><li class="chapter-item expanded affix "><a href="10-智能指针类型(三).html">智能指针类型(三)</a></li><li class="chapter-item expanded affix "><a href="11-智能指针类型(四).html" class="active">智能指针类型(四)</a></li><li class="chapter-item expanded affix "><a href="12-std库(一)FFI及内存管理.html">std库(一)FFI及内存管理</a></li><li class="chapter-item expanded affix "><a href="13-std库(二)文件描述符及进程管理.html">std库(二)文件描述符及进程管理</a></li><li class="chapter-item expanded affix "><a href="14-std库(三)线程间锁通信.html">std库(三)线程间锁通信</a></li><li class="chapter-item expanded affix "><a href="15-std库(四)线程临界区类型.html">std库(四)线程临界区类型</a></li><li class="chapter-item expanded affix "><a href="16-std库(五)线程管理.html">std库(五)线程管理</a></li><li class="chapter-item expanded affix "><a href="17-std库(六)mpsc通信.html">std库(六)mpsc通信</a></li><li class="chapter-item expanded affix "><a href="18-std库(七)RUST的RUNTIME.html">std库(七)RUST的RUNTIME</a></li><li class="chapter-item expanded affix "><a href="19-std库(八)RUST文件系统.html">std库(八)RUST文件系统</a></li><li class="chapter-item expanded affix "><a href="20-std库(九)RUST的IO.html">std库(九)RUST的IO</a></li><li class="chapter-item expanded affix "><a href="21-RUST的异步编程.html">RUST的异步编程</a></li><li class="chapter-item expanded affix "><a href="后记.html">后记</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">rust-inside-std-book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h2 id="linkedlistt代码分析"><a class="header" href="#linkedlistt代码分析"><code>LinkedList&lt;T&gt;</code>代码分析</a></h2>
+<p>双向链表及其他数据结构的代码实现都是经典的实用性及训练性上佳的项目。本书对这些经典数据结构将只分析LinkedList<T>，重点分析RUST与其他语言的不同的部分。如果对LinkedList<T>彻底理解了，那其他数据结构也就不成为问题:
+<code>LinkedList&lt;T&gt;</code>类型结构定义如下：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//这个定义表示LinkedList只支持固定长度的T类型
+pub struct LinkedList&lt;T&gt; {
+    //等同于直接用裸指针，使得代码最方便及简化，但需要对安全性额外投入精力
+    //这个实际上与C语言相同，只是用Option增加了安全措施
+    head: Option&lt;NonNull&lt;Node&lt;T&gt;&gt;&gt;,
+    tail: Option&lt;NonNull&lt;Node&lt;T&gt;&gt;&gt;,
+    len: usize,
+    //marker说明本结构有一个Box&lt;Node&lt;T&gt;&gt;的所有权，并会负责调用其的drop
+    //编译器应做好drop check, 检查与本结构相关的Box&lt;Node&lt;T&gt;&gt;的生命周期及drop
+    //marker体现了RUST的独特点
+    marker: PhantomData&lt;Box&lt;Node&lt;T&gt;&gt;&gt;,
+}
+
+struct Node&lt;T&gt; {
+    next: Option&lt;NonNull&lt;Node&lt;T&gt;&gt;&gt;,
+    prev: Option&lt;NonNull&lt;Node&lt;T&gt;&gt;&gt;,
+    element: T,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>Node方法代码：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T&gt; Node&lt;T&gt; {
+    fn new(element: T) -&gt; Self {
+        Node { next: None, prev: None, element }
+    }
+
+    fn into_element(self: Box&lt;Self&gt;) -&gt; T {
+        //消费了Box，堆内存被释放并将element拷贝到栈
+        self.element
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>LinkedList的创建及简单的增减方法：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T&gt; LinkedList&lt;T&gt; {
+    //创建一个空的LinkedList
+    pub const fn new() -&gt; Self {
+        LinkedList { head: None, tail: None, len: 0, marker: PhantomData }
+    }
+<span class="boring">}</span></code></pre></pre>
+<p>在头部增加一个成员及删除一个成员：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>    //在首部增加一个节点
+    pub fn push_front(&amp;mut self, elt: T) {
+        //用box从堆内存申请一个节点，push_front_node见后面函数
+        self.push_front_node(box Node::new(elt));
+    }
+    fn push_front_node(&amp;mut self, mut node: Box&lt;Node&lt;T&gt;&gt;) {
+        // 整体全是不安全代码
+        unsafe {
+            node.next = self.head;
+            node.prev = None;
+            //需要将Box的堆内存leak出来使用。此块内存后继如果还在链表，需要由LinkedList负责drop.后面可以看到LinkedList的drop函数的处理。
+            //如果pop出链表，那会重新用这里leak出来的NonNull&lt;Node&lt;T&gt;&gt;生成Box,再由Box释放
+            let node = Some(Box::leak(node).into());
+
+            match self.head {
+                //空链表
+                None =&gt; self.tail = node,
+                // 目前采用NonNull&lt;Node&lt;T&gt;&gt;的方案，此处代码就很自然
+                // 如果换成Box&lt;Node&lt;T&gt;&gt;的方案，这里就要类似如下:
+                // 先用take将head复制到栈中创建的新变量，
+                // 新变量的prev置为node
+                // 用replace将新变量再复制回head。
+                // 也注意，此处很容易也采用先take, 修改，然后replace的方案
+                // 要注意规避Option导致的这个习惯,会造成两次内存拷贝，效率太低
+                Some(head) =&gt; (*head.as_ptr()).prev = node,
+            }
+            
+            self.head = node;
+            self.len += 1;
+        }
+    }
+
+    //从链表头部删除一个节点
+    pub fn pop_front(&amp;mut self) -&gt; Option&lt;T&gt; {
+        //Option&lt;T&gt;::map，此函数后，节点的堆内存已经被释放
+        //变量被拷贝到栈内存
+        self.pop_front_node().map(Node::into_element)
+    }
+    fn pop_front_node(&amp;mut self) -&gt; Option&lt;Box&lt;Node&lt;T&gt;&gt;&gt; {
+        //整体是unsafe
+        self.head.map(|node| unsafe {
+            //重新生成Box，以便后继可以释放堆内存
+            let node = Box::from_raw(node.as_ptr());
+            //更换head指针
+            self.head = node.next;
+
+            match self.head {
+                None =&gt; self.tail = None,
+                // push_front_node() 已经分析过
+                Some(head) =&gt; (*head.as_ptr()).prev = None,
+            }
+
+            self.len -= 1;
+            node
+        })
+    }
+<span class="boring">}</span></code></pre></pre>
+<p>在尾部增加一个成员及删除一个成员</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>    //从尾部增加一个节点
+    pub fn push_back(&amp;mut self, elt: T) {
+        //用box从堆内存申请一个节点
+        self.push_back_node(box Node::new(elt));
+    }
+
+    fn push_back_node(&amp;mut self, mut node: Box&lt;Node&lt;T&gt;&gt;) {
+        // 整体不安全
+        unsafe {
+            node.next = None;
+            node.prev = self.tail;
+            //需要将Box的堆内存leak出来使用。此块内存后继如果还在链表，需要由LinkedList负责drop.
+            //如果pop出链表，那会重新用这里leak出来的NonNull&lt;Node&lt;T&gt;&gt;重新生成Box
+            let node = Some(Box::leak(node).into());
+
+            match self.tail {
+                None =&gt; self.head = node,
+                //前面代码已经有分析 
+                Some(tail) =&gt; (*tail.as_ptr()).next = node,
+            }
+
+            self.tail = node;
+            self.len += 1;
+        }
+    }
+
+    //从尾端删除节点
+    pub fn pop_back(&amp;mut self) -&gt; Option&lt;T&gt; {
+        self.pop_back_node().map(Node::into_element)
+    }
+
+    fn pop_back_node(&amp;mut self) -&gt; Option&lt;Box&lt;Node&lt;T&gt;&gt;&gt; {
+        self.tail.map(|node| unsafe {
+            //重新创建Box以便删除堆内存
+            let node = Box::from_raw(node.as_ptr());
+            self.tail = node.prev;
+
+            match self.tail {
+                None =&gt; self.head = None,
+                
+                Some(tail) =&gt; (*tail.as_ptr()).next = None,
+            }
+
+            self.len -= 1;
+            node
+        })
+    }
+    //删除一个节点，这个操作也是RUST比较独特的体现
+    unsafe fn unlink_node(&amp;mut self, mut node: NonNull&lt;Node&lt;T&gt;&gt;) {
+        //现在拥有node的所有权，
+        let node = unsafe { node.as_mut() }; 
+
+        match node.prev {
+            //不能复制新的节点，注意这里的写法
+            Some(prev) =&gt; unsafe { (*prev.as_ptr()).next = node.next },
+            // node是head节点
+            None =&gt; self.head = node.next,
+        };
+
+        match node.next {
+            //不能获取next的所有权，只能是这个写法
+            Some(next) =&gt; unsafe { (*next.as_ptr()).prev = node.prev },
+            // node是tail节点
+            None =&gt; self.tail = node.prev,
+        };
+
+        self.len -= 1;
+    }   
+    ...
+}
+
+//Drop
+unsafe impl&lt;#[may_dangle] T&gt; Drop for LinkedList&lt;T&gt; {
+    fn drop(&amp;mut self) {
+        struct DropGuard&lt;'a, T&gt;(&amp;'a mut LinkedList&lt;T&gt;);
+
+        impl&lt;'a, T&gt; Drop for DropGuard&lt;'a, T&gt; {
+            fn drop(&amp;mut self) {
+                //如果此函数后面的while循环出现panic，这里可以继续做释放
+                //此处代码的存在应该是RUST标准库中隐藏比较深的bug导致
+                while self.0.pop_front_node().is_some() {}
+            }
+        }
+
+        while let Some(node) = self.pop_front_node() {
+            let guard = DropGuard(self);
+            //显式的drop 获取的Box&lt;Node&lt;T&gt;&gt;
+            drop(node);
+            //执行到此处，guard认为已经完成，不能再调用guard的drop
+            mem::forget(guard);
+        }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>以上基本上说明了RUST的LinkedList的设计及代码的一些关键点。</p>
+<p>用Iterator来对List进行访问，Iterator的相关结构代码如下：
+into_iter()相关结构及方法：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//变量本身的Iterator的类型
+pub struct IntoIter&lt;T&gt; {
+    list: LinkedList&lt;T&gt;,
+}
+
+impl&lt;T&gt; IntoIterator for LinkedList&lt;T&gt; {
+    type Item = T;
+    type IntoIter = IntoIter&lt;T&gt;;
+
+    /// 对LinkedList&lt;T&gt; 做消费
+    fn into_iter(self) -&gt; IntoIter&lt;T&gt; {
+        IntoIter { list: self }
+    }
+}
+
+impl&lt;T&gt; Iterator for IntoIter&lt;T&gt; {
+    type Item = T;
+
+    fn next(&amp;mut self) -&gt; Option&lt;T&gt; {
+        //从头部获取变量
+        self.list.pop_front()
+    }
+
+    fn size_hint(&amp;self) -&gt; (usize, Option&lt;usize&gt;) {
+        (self.list.len, Some(self.list.len))
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>iter_mut()调用相关结构及方法</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//可变引用的Iterator的类型
+pub struct IterMut&lt;'a, T: 'a&gt; {
+    head: Option&lt;NonNull&lt;Node&lt;T&gt;&gt;&gt;,
+    tail: Option&lt;NonNull&lt;Node&lt;T&gt;&gt;&gt;,
+    len: usize,
+    //这个marker也标示了IterMut对LinkedList有一个可变引用
+    //创建IterMut后，与之相关的LinkerList不能在被其他安全的代码修改
+    marker: PhantomData&lt;&amp;'a mut Node&lt;T&gt;&gt;,
+}
+
+impl &lt;T&gt; LinkedList&lt;T&gt; {
+    ...
+    pub fn iter_mut(&amp;mut self) -&gt; IterMut&lt;'_, T&gt; {
+        IterMut { head: self.head, tail: self.tail, len: self.len, marker: PhantomData }
+    }
+    ...
+}
+impl&lt;'a, T&gt; Iterator for IterMut&lt;'a, T&gt; {
+    type Item = &amp;'a mut T;
+
+    fn next(&amp;mut self) -&gt; Option&lt;&amp;'a mut T&gt; {
+        if self.len == 0 {
+            None
+        } else {
+            //用Option::map简化代码
+            self.head.map(|node| unsafe {
+                // 保存首部成员
+                let node = &amp;mut *node.as_ptr();
+                // 删除首部成员
+                self.len -= 1;
+                self.head = node.next;
+                // 返回可变引用，此处的生命周期如下：
+                // 返回值生命周期小于self
+                // self 生命周期小于 LinkedList
+                &amp;mut node.element
+            })
+        }
+    }
+
+    ...
+}
+
+//不可变引用的Iterator的类型
+pub struct Iter&lt;'a, T: 'a&gt; {
+    head: Option&lt;NonNull&lt;Node&lt;T&gt;&gt;&gt;,
+    tail: Option&lt;NonNull&lt;Node&lt;T&gt;&gt;&gt;,
+    len: usize,
+    //对生命周期做标识，也标识了一个对LinkedList的不可变引用
+    marker: PhantomData&lt;&amp;'a Node&lt;T&gt;&gt;,
+}
+
+impl&lt;T&gt; Clone for Iter&lt;'_, T&gt; {
+    fn clone(&amp;self) -&gt; Self {
+        //本书中第一次出现这个表述
+        Iter { ..*self }
+    }
+}
+
+//Iterator trait for Iter略
+<span class="boring">}</span></code></pre></pre>
+<p>LinkedList其他的代码略。
+LinkedList当然有不使用unsafe方式的实现方法，但是unsafe的实现方式最简化，效率最高。且unsafe的代码量并不高，可控性很强。盲目的排斥unsafe实际上也是一件不RUST的事。</p>
+<h2 id="string-类型分析"><a class="header" href="#string-类型分析">String 类型分析</a></h2>
+<p>String结构定义如下：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct String {
+    vec: Vec&lt;u8&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><code>Vec&lt;u8&gt;</code>和String的关系可以与[u8]与&amp;str的关系相对比。整个String实际上是一个大的
+Adapter 模式，针对Vec<u8>, [u8], &amp;str三者做组合
+String的创建函数：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl String {
+     pub const fn new() -&gt; String {
+        String { vec: Vec::new() }
+    }
+
+    //将str内容加到String的尾部
+    pub fn push_str(&amp;mut self, string: &amp;str) {
+        //adapter，直接用Vec::extend_from_slice([u8])
+        //具体的细节请参考Vec那节
+        self.vec.extend_from_slice(string.as_bytes())
+    }
+    ...
+}
+
+impl ToOwned for str {
+    type Owned = String;
+    fn to_owned(&amp;self) -&gt; String {
+        //这里是个adapter模式，首先从用self.as_bytes()获取[u8], 然后用通用的[u8].to_owned()完成
+        //to_owned逻辑,随后从Vec[u8]生成String
+        unsafe { String::from_utf8_unchecked(self.as_bytes().to_owned()) }
+    }
+
+    
+    fn clone_into(&amp;self, target: &amp;mut String) {
+        //adapter模式，需要先得到Vec&lt;u8&gt;,因为into_bytes会消费掉String。
+        //target不支持，所以需要用take先把所有权转移出来，然后获取Vec&lt;u8&gt;
+        //这是RUST的一个通用的技巧
+        let mut b = mem::take(target).into_bytes();
+        //通用的[u8].clone_into
+        self.as_bytes().clone_into(&amp;mut b);
+        //把新的String赋给原先的地址
+        *target = unsafe { String::from_utf8_unchecked(b) }
+    }
+}
+
+impl From&lt;&amp;str&gt; for String {
+    fn from(s: &amp;str) -&gt; String {
+        s.to_owned()
+    }
+} 
+
+
+<span class="boring">}</span></code></pre></pre>
+<p>解引用方法代码：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl ops::Deref for String {
+    type Target = str;
+
+    fn deref(&amp;self) -&gt; &amp;str {
+        //&amp;self.vec会被强转为&amp;[u8]
+        unsafe { str::from_utf8_unchecked(&amp;self.vec) }
+    }
+}
+
+impl ops::DerefMut for String {
+    fn deref_mut(&amp;mut self) -&gt; &amp;mut str {
+        //这里直接用&amp;mut self.vec应该也可以，会被强转成&amp;mut [u8]
+        unsafe { str::from_utf8_unchecked_mut(&amp;mut *self.vec) }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>运算符重载方法</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl ops::Index&lt;ops::RangeFull&gt; for String {
+    type Output = str;
+
+    fn index(&amp;self, _index: ops::RangeFull) -&gt; &amp;str {
+        unsafe { str::from_utf8_unchecked(&amp;self.vec) }
+    }
+}
+impl ops::Index&lt;ops::Range&lt;usize&gt;&gt; for String {
+    type Output = str;
+
+    fn index(&amp;self, index: ops::Range&lt;usize&gt;) -&gt; &amp;str {
+        //先用Index&lt;RangeFull&gt;取&amp;str, 然后用Index&lt;Range&gt;取子串
+        &amp;self[..][index]
+    }
+}
+impl Borrow&lt;str&gt; for String {
+    fn borrow(&amp;self) -&gt; &amp;str {
+        //自动解引用, 利用Index&lt;RangeFull&gt;完成，代码最简
+        &amp;self[..]
+    }
+}
+
+impl BorrowMut&lt;str&gt; for String {
+    fn borrow_mut(&amp;mut self) -&gt; &amp;mut str {
+        //自动解引用, 利用Index&lt;RangeFull&gt;完成，代码最简
+        &amp;mut self[..]
+    }
+}
+
+impl Add&lt;&amp;str&gt; for String {
+    type Output = String;
+
+    fn add(mut self, other: &amp;str) -&gt; String {
+        self.push_str(other);
+        self
+    }
+}
+
+impl AddAssign&lt;&amp;str&gt; for String {
+    fn add_assign(&amp;mut self, other: &amp;str) {
+        self.push_str(other);
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>字符串数组连接方法：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//此函数主要简化多个字符串的连接
+impl&lt;S: Borrow&lt;str&gt;&gt; Concat&lt;str&gt; for [S] {
+    type Output = String;
+
+    fn concat(slice: &amp;Self) -&gt; String {
+        //见下个方法分析
+        Join::join(slice, &quot;&quot;)
+    }
+}
+
+impl&lt;S: Borrow&lt;str&gt;&gt; Join&lt;&amp;str&gt; for [S] {
+    type Output = String;
+
+    fn join(slice: &amp;Self, sep: &amp;str) -&gt; String {
+        unsafe { String::from_utf8_unchecked(join_generic_copy(slice, sep.as_bytes())) }
+    }
+}
+
+macro_rules! specialize_for_lengths {
+    ($separator:expr, $target:expr, $iter:expr; $($num:expr),*) =&gt; {{
+        let mut target = $target;
+        let iter = $iter;
+        let sep_bytes = $separator;
+        match $separator.len() {
+            $(
+                // 如果分隔切片长度符合预设值
+                $num =&gt; {
+                    for s in iter {
+                        //拷贝分隔切片到目的切片，且更新目的切片
+                        copy_slice_and_advance!(target, sep_bytes);
+                        //拷贝内容切片
+                        let content_bytes = s.borrow().as_ref();
+                        copy_slice_and_advance!(target, content_bytes);
+                    }
+                },
+            )*
+            _ =&gt; {
+                // 如果分隔切片长度不符合预设值，实质也做与上段代码同样的操作
+                for s in iter {
+                    copy_slice_and_advance!(target, sep_bytes);
+                    let content_bytes = s.borrow().as_ref();
+                    copy_slice_and_advance!(target, content_bytes);
+                }
+            }
+        }
+        target
+    }}
+}
+
+//完成一个切片拷贝后，切片向前到未拷贝的开始处
+macro_rules! copy_slice_and_advance {
+    ($target:expr, $bytes:expr) =&gt; {
+        let len = $bytes.len();
+        //将目的切片切分成两段，首段为待拷贝空间，尾端为未拷贝空间
+        let (head, tail) = { $target }.split_at_mut(len);
+        head.copy_from_slice($bytes);
+        $target = tail;
+    };
+}
+
+//将若干个T类型的切片连接到一起形成一个基于T类型的切片
+fn join_generic_copy&lt;B, T, S&gt;(slice: &amp;[S], sep: &amp;[T]) -&gt; Vec&lt;T&gt;
+where
+    T: Copy, //最基础的成员类型
+    B: AsRef&lt;[T]&gt; + ?Sized, //可以表示为最基础成员的切片引用
+    S: Borrow&lt;B&gt;, //以B类型作为操作类型，所以S应该能borrow成B类型的引用
+{
+    let sep_len = sep.len();
+    let mut iter = slice.iter();
+
+    // 第一个成员头部没有间隔
+    let first = match iter.next() {
+        Some(first) =&gt; first,
+        None =&gt; return vec![],
+    };
+
+    //计算iter中所有成员的长度，并加上间隔长度乘剩余成员的数目
+    //得到总的长度。
+    //从这个函数能够发现rust的链式编程的能力
+    
+    let reserved_len = sep_len
+        .checked_mul(iter.len())//这里去掉了slice的首个成员，
+        .and_then(|n| {
+            //这里的重新重新生成iter，计算了所有的slice的所有成员
+            slice.iter().map(|s| s.borrow().as_ref().len()).try_fold(n, usize::checked_add)
+        })
+        .expect(&quot;attempt to join into collection with len &gt; usize::MAX&quot;);
+
+    // 创建一个有足够容量的Vec
+    let mut result = Vec::with_capacity(reserved_len);
+    debug_assert!(result.capacity() &gt;= reserved_len);
+    //完成first的内容拷贝
+    result.extend_from_slice(first.borrow().as_ref());
+
+    unsafe {
+        let pos = result.len();
+        let target = result.get_unchecked_mut(pos..reserved_len);
+        
+        //完成对剩余成员及分隔符拷贝到result
+        let remain = specialize_for_lengths!(sep, target, iter; 0, 1, 2, 3, 4);
+
+        //完成长度拷贝。
+        let result_len = reserved_len - remain.len();
+        result.set_len(result_len);
+    }
+    result
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="rust的fmt相关代码"><a class="header" href="#rust的fmt相关代码">RUST的fmt相关代码</a></h2>
+<p>fmt给出RUST实现可变参数的解决方案。<br />
+alloc库中给出了format宏，完成对可变参数的格式化输出。<br />
+format宏代码如下：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>macro_rules! format {
+    ($($arg:tt)*) =&gt; {{
+        //format宏调用后继的format函数，并由format_args宏将可变参数完成参数转换
+        let res = $crate::fmt::format($crate::__export::format_args!($($arg)*));
+        res
+    }}
+}
+<span class="boring">}</span></code></pre></pre>
+<p>format_args宏将可变参数转换成Arguments类型变量，可以作为RUST的可变参数支持的经典案列。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//因为安全的愿因，下宏由编译器实现，
+//format_args宏对输入的字符串和参数分析后返回类型为Arguments的变量，
+macro_rules! format_args {
+    ($fmt:expr) =&gt; {{ /* compiler built-in */ }};
+    ($fmt:expr, $($args:tt)*) =&gt; {{ /* compiler built-in */ }};
+}
+//Arguments类型结构
+pub struct Arguments&lt;'a&gt; {
+    // 存放需要格式化的参数之间的字符串，对应于每一个格式化参数
+    // 此字符串可以为空
+    pieces: &amp;'a [&amp;'static str],
+
+    // 针对每个格式化参数的格式描述
+    fmt: Option&lt;&amp;'a [rt::v1::Argument]&gt;,
+
+    // 每个参数，以及生成参数的格式化字符串的函数
+    args: &amp;'a [ArgumentV1&lt;'a&gt;],
+}
+<span class="boring">}</span></code></pre></pre>
+<p>format_args生成Arguments举例如下：
+format_args!(&quot;ab {:b} cd {:p}&quot;, 1, 2) 
+结果的Arguments结构中：<br />
+其中<strong>pieces</strong>有两个成员，为:<code>&quot;ab &quot;, &quot; cd &quot; </code>, 注意字符串中的空格
+fmt有两个成员，为： </p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>    //具体结构见后继的定义
+    { postion:0, 
+      format:{align:UnKnown, flags:0, precision:Implied, width:Implied}}, 
+    { position:1, 
+      format:{align:UnKnown, flags:4, precision:Implied, width:Implied}}
+<span class="boring">}</span></code></pre></pre>
+<p>其中<strong>args</strong>有两个成员为: </p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>    //具体的结构见后继的定义
+    {1, core::fmt::num::Binary::fmt()}, 
+    {2, core::fmt::num::Pointer::fmt()}
+<span class="boring">}</span></code></pre></pre>
+<p>fmt及args相关的类型定义如下：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//rt::v1::Argument
+//对非默认格式化参数，每个参数format_args!宏会生成一个Argument变量
+pub struct Argument {
+    //表示参数的在Arguments中的序号，
+    pub position: usize,
+    //格式参数，用于格式化输出
+    pub format: FormatSpec,
+}
+pub struct FormatSpec {
+    //格式化时需要填充的字符
+    pub fill: char,
+    pub align: Alignment,
+    //FlagV1 按位赋值
+    pub flags: u32,
+    pub precision: Count,
+    pub width: Count,
+}
+
+//上面结构中的辅助类型
+pub enum Alignment {
+    /// 左端对齐
+    Left,
+    /// 右端对齐
+    Right,
+    /// 中间对齐
+    Center,
+    /// 没有对齐
+    Unknown,
+}
+
+//flags 的位, 
+enum FlagV1 {
+    SignPlus, //0
+    SignMinus,  //1
+    Alternate,  //2
+    SignAwareZeroPad, //3
+    DebugLowerHex,  //4
+    DebugUpperHex,  //5
+}
+
+pub enum Count {
+    /// 字面量的值
+    Is(usize),
+    /// Specified using `$` and `*` syntaxes, stores the index into `args`
+    Param(usize),
+    /// Not specified
+    Implied,
+}
+
+//以下结构可认为是针对每一个参数，都有一个格式化输出的函数与其对应
+pub struct ArgumentV1&lt;'a&gt; {
+    //类似C语言的va_arg的返回类型，可以认为是void *
+    value: &amp;'a Opaque,
+    //针对value的格式化输出函数
+    formatter: fn(&amp;Opaque, &amp;mut Formatter&lt;'_&gt;) -&gt; Result,
+}
+
+//上述结构中的类型
+//类似void
+extern &quot;C&quot; {
+    type Opaque;
+}
+
+//每个格式化参数需要生成一个Formatter变量
+//用于存放格式化信息以指示如和生成参数的格式化字符串
+//生成的格式化字符串应输出到哪里
+pub struct Formatter&lt;'a&gt; {
+    //以下到precision都是由format_arg!宏在发现参数要求非默认的格式化时
+    //生成的。
+    flags: u32,
+    fill: char,
+    align: rt::v1::Alignment,
+    width: Option&lt;usize&gt;,
+    precision: Option&lt;usize&gt;,
+    
+    //格式化字符串输出的缓存，当前一般就是String
+    buf: &amp;'a mut (dyn Write + 'a),
+}
+<span class="boring">}</span></code></pre></pre>
+<p>format_args宏完成Arguments的生成后，
+下面的format函数将之作为参数完成格式化字符串生成.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//Arguments包含了本输出中所有的需要格式化的参数
+pub fn format(args: Arguments&lt;'_&gt;) -&gt; string::String {
+    //估计了输出字符串长度，尽量减少堆内存的重新申请
+    let capacity = args.estimated_capacity();
+    //申请足够空间的字符串
+    let mut output = string::String::with_capacity(capacity);
+    //根据输入的格式化参数，完成对参数的格式化字符串输出
+    output.write_fmt(args).expect(&quot;a formatting trait implementation returned an error&quot;);
+    output
+}
+<span class="boring">}</span></code></pre></pre>
+<p>使用了String::write_fmt, 是Write trait 的方法，String实现了此trait，代码如下：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub trait Write {
+    fn write_str(&amp;mut self, s: &amp;str) -&gt; Result;
+    fn write_char(&amp;mut self, c: char) -&gt; Result {
+        self.write_str(c.encode_utf8(&amp;mut [0; 4]))
+    }
+
+    //格式化的输出
+    fn write_fmt(mut self: &amp;mut Self, args: Arguments&lt;'_&gt;) -&gt; Result {
+        //见后面的write函数分析
+        write(&amp;mut self, args)
+    }
+}
+// String的Write trait实现
+impl fmt::Write for String {
+    fn write_str(&amp;mut self, s: &amp;str) -&gt; fmt::Result {
+        self.push_str(s);
+        Ok(())
+    }
+
+    fn write_char(&amp;mut self, c: char) -&gt; fmt::Result {
+        self.push(c);
+        Ok(())
+    }
+}
+
+//Formatter的Write trait实现
+impl Write for Formatter&lt;'_&gt; {
+    fn write_str(&amp;mut self, s: &amp;str) -&gt; Result {
+        self.buf.write_str(s)
+    }
+
+    fn write_char(&amp;mut self, c: char) -&gt; Result {
+        self.buf.write_char(c)
+    }
+
+    fn write_fmt(&amp;mut self, args: Arguments&lt;'_&gt;) -&gt; Result {
+        write(self.buf, args)
+    }
+}
+
+//这里是Display, Debug常用的另外一个格式化输出的宏write!
+macro_rules! write {
+    ($dst:expr, $($arg:tt)*) =&gt; {
+        //$dst即&amp;mut dyn Write
+        $dst.write_fmt($crate::format_args!($($arg)*))
+    };
+}
+
+//此函数是格式化输入的核心函数，output当前可暂时认为是String
+pub fn write(output: &amp;mut dyn Write, args: Arguments&lt;'_&gt;) -&gt; Result {
+    //创建格式化参数的变量,buf设置为output
+    let mut formatter = Formatter::new(output);
+    let mut idx = 0;
+
+    match args.fmt {
+        //如果所有参数都是默认格式输出
+        None =&gt; {
+            // 对所有的参数进行轮询
+            for (i, arg) in args.args.iter().enumerate() {
+                //获取该参数前需要输出的字符串
+                let piece = unsafe { args.pieces.get_unchecked(i) };
+                if !piece.is_empty() {
+                    //向output输出获取的字符串
+                    formatter.buf.write_str(*piece)?;
+                }
+                //调用每个参数的格式化输出函数，向formatter输出格式化参数字符串
+                //此时formatter所有的成员都是默认
+                (arg.formatter)(arg.value, &amp;mut formatter)?;
+                idx += 1;
+            }
+        }
+        //如果有参数不是默认格式输出
+        Some(fmt) =&gt; {
+            // 对所有参数进行轮询
+            for (i, arg) in fmt.iter().enumerate() {
+                // 获取该参数前应该输出的字符串
+                let piece = unsafe { args.pieces.get_unchecked(i) };
+                if !piece.is_empty() {
+                    //向output输出获取的字符串
+                    formatter.buf.write_str(*piece)?;
+                }
+                //生成格式并输出格式化参数字符串
+                unsafe { run(&amp;mut formatter, arg, args.args) }?;
+                idx += 1;
+            }
+        }
+    }
+
+    // 如果还有额外的字符串
+    if let Some(piece) = args.pieces.get(idx) {
+        //输出该字符串
+        formatter.buf.write_str(*piece)?;
+    }
+
+    Ok(())
+}
+
+//非默认个数输出的格式化字符串输出函数
+unsafe fn run(fmt: &amp;mut Formatter&lt;'_&gt;, arg: &amp;rt::v1::Argument, args: &amp;[ArgumentV1&lt;'_&gt;]) -&gt; Result {
+    //根据格式化参数的格式完成fmt的格式参数设置
+    fmt.fill = arg.format.fill;
+    fmt.align = arg.format.align;
+    fmt.flags = arg.format.flags;
+    unsafe {
+        fmt.width = getcount(args, &amp;arg.format.width);
+        fmt.precision = getcount(args, &amp;arg.format.precision);
+    }
+
+    debug_assert!(arg.position &lt; args.len());
+    //获取格式化参数
+    let value = unsafe { args.get_unchecked(arg.position) };
+
+    // 真正的进行格式化
+    (value.formatter)(value.value, fmt)
+}
+
+
+impl&lt;'a&gt; Arguments&lt;'a&gt; {
+    /// format_args!()完成字符串和参数解析后，如果都是默认格式，用下面的函数创建
+    /// Arguments变量
+    pub const fn new_v1(pieces: &amp;'a [&amp;'static str], args: &amp;'a [ArgumentV1&lt;'a&gt;]) -&gt; Arguments&lt;'a&gt; {
+        if pieces.len() &lt; args.len() || pieces.len() &gt; args.len() + 1 {
+            panic!(&quot;invalid args&quot;);
+        }
+        Arguments { pieces, fmt: None, args }
+    }
+
+    //format_args!()完成字符串和参数解析后，如果格式化格式不是默认格式，用下面的函数创建Arguments
+    pub const fn new_v1_formatted(
+        pieces: &amp;'a [&amp;'static str],
+        args: &amp;'a [ArgumentV1&lt;'a&gt;],
+        fmt: &amp;'a [rt::v1::Argument],
+        _unsafe_arg: UnsafeArg,
+    ) -&gt; Arguments&lt;'a&gt; {
+        Arguments { pieces, fmt: Some(fmt), args }
+    }
+
+    //预估格式化后字符串长度
+    pub fn estimated_capacity(&amp;self) -&gt; usize {
+        //计算所有除格式化参数外的长度
+        let pieces_length: usize = self.pieces.iter().map(|x| x.len()).sum();
+
+        if self.args.is_empty() {
+            pieces_length
+        } else if !self.pieces.is_empty() &amp;&amp; self.pieces[0].is_empty() &amp;&amp; pieces_length &lt; 16 {
+            //如果字符串以格式化参数作为起始且除格式化以外的字符小于16
+            0
+        } else {
+            //其他情况，为了防止额外申请堆内存，事先申请更多的内存
+            pieces_length.checked_mul(2).unwrap_or(0)
+        }
+    }
+}
+
+<span class="boring">}</span></code></pre></pre>
+<p>以输出为二进制的isize的格式化为例，分析一下格式化具体的实现类型结构及方法：
+首先，fmt::Binary负责二进制格式化trait </p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//对于不同进制的格式化实现trait
+macro_rules! integer {
+    ($Int:ident, $Uint:ident) =&gt; {
+        int_base! { fmt::Binary   for $Int as $Uint  -&gt; Binary }
+        int_base! { fmt::Octal    for $Int as $Uint  -&gt; Octal }
+        int_base! { fmt::LowerHex for $Int as $Uint  -&gt; LowerHex }
+        int_base! { fmt::UpperHex for $Int as $Uint  -&gt; UpperHex }
+
+        int_base! { fmt::Binary   for $Uint as $Uint -&gt; Binary }
+        int_base! { fmt::Octal    for $Uint as $Uint -&gt; Octal }
+        int_base! { fmt::LowerHex for $Uint as $Uint -&gt; LowerHex }
+        int_base! { fmt::UpperHex for $Uint as $Uint -&gt; UpperHex }
+    };
+}
+//在isize,usize实现上述的格式化trait
+integer! { isize, usize }
+
+//int_base的宏定义
+macro_rules! int_base {
+    (fmt::$Trait:ident for $T:ident as $U:ident -&gt; $Radix:ident) =&gt; {
+        impl fmt::$Trait for $T {
+            fn fmt(&amp;self, f: &amp;mut fmt::Formatter&lt;'_&gt;) -&gt; fmt::Result {
+                //具体的函数
+                $Radix.fmt_int(*self as $U, f)
+            }
+        }
+    };
+}
+
+//int_base宏中的$Radix的类型结构定义
+struct Binary;
+
+//fmt_int定义在下面的trait中
+//此trait实现不同进制的整数的格式化通用操作
+trait GenericRadix: Sized {
+    ///进制 
+    const BASE: u8;
+
+    /// 格式化的前缀字符串.
+    const PREFIX: &amp;'static str;
+
+    /// x为十进制的数字，返回值是self进制的x的字符的编码数值 
+    fn digit(x: u8) -&gt; u8;
+
+    /// 将某一个数值按输入的格式化变量的要求进行格式化.
+    fn fmt_int&lt;T: DisplayInt&gt;(&amp;self, mut x: T, f: &amp;mut fmt::Formatter&lt;'_&gt;) -&gt; fmt::Result {
+        //首先获取足够的字符串空间来存放格式化后的内容
+        //对于二进制，需要128个字节
+        let zero = T::zero();
+        let is_nonnegative = x &gt;= zero;
+        let mut buf = [MaybeUninit::&lt;u8&gt;::uninit(); 128];
+        let mut curr = buf.len();
+        //见后继DisplayInt的分析
+        let base = T::from_u8(Self::BASE);
+        if is_nonnegative {
+            //从最低位到最高位填充buf
+            for byte in buf.iter_mut().rev() {
+                //余值填入当前的buf
+                let n = x % base; // Get the current place value.
+                //减掉已经填充的值
+                x = x / base; // Deaccumulate the number.
+                //将值转换为字符并写入buf
+                byte.write(Self::digit(n.to_u8())); // Store the digit in the buffer.
+                curr -= 1;
+                if x == zero {
+                    // No more digits left to accumulate.
+                    break;
+                };
+            }
+        } else {
+            //仍然从最低位到最高位
+            for byte in buf.iter_mut().rev() {
+                //获得当前位的值,负数
+                let n = zero - (x % base); // Get the current place value.
+                x = x / base; // Deaccumulate the number.
+                byte.write(Self::digit(n.to_u8())); // Store the digit in the buffer.
+                curr -= 1;
+                if x == zero {
+                    // No more digits left to accumulate.
+                    break;
+                };
+            }
+        }
+        //获取有意义的切片
+        let buf = &amp;buf[curr..];
+        //生成utf-8字符串
+        let buf = unsafe {
+            str::from_utf8_unchecked(slice::from_raw_parts(
+                MaybeUninit::slice_as_ptr(buf),
+                buf.len(),
+            ))
+        };
+        //Formatter会根据参数生成符合格式化的其他填充内容
+        f.pad_integral(is_nonnegative, Self::PREFIX, buf)
+    }
+}
+
+//以下为对isize及usize实现GenericRadix trait的代码
+macro_rules! radix {
+    ($T:ident, $base:expr, $prefix:expr, $($x:pat =&gt; $conv:expr),+) =&gt; {
+        impl GenericRadix for $T {
+            const BASE: u8 = $base;
+            const PREFIX: &amp;'static str = $prefix;
+            fn digit(x: u8) -&gt; u8 {
+                match x {
+                    $($x =&gt; $conv,)+
+                    x =&gt; panic!(&quot;number not in the range 0..={}: {}&quot;, Self::BASE - 1, x),
+                }
+            }
+        }
+    }
+}
+
+//这里只列出二进制，其他进制略
+radix! { Binary,    2, &quot;0b&quot;, x @  0 ..=  1 =&gt; b'0' + x }
+
+//Formatter的其他方法如下：
+impl&lt;'a&gt; Formatter&lt;'a&gt; {
+    //对整形的格式化填充内容，在基础内容的基础上填充格式化需要的其他字符，完成对类型的格式化输出
+    pub fn pad_integral(&amp;mut self, is_nonnegative: bool, prefix: &amp;str, buf: &amp;str) -&gt; Result {
+        //获取基础内容字符串的长度
+        //作为计算总长度的基础
+        let mut width = buf.len();
+
+        //是否需要正负符号
+        let mut sign = None;
+        if !is_nonnegative {
+            //负数需要符号
+            sign = Some('-');
+            //输出的字符串长度+1
+            width += 1;
+        } else if self.sign_plus() {
+            //格式化要求输出+号
+            sign = Some('+');
+            width += 1;
+        }
+
+        let prefix = if self.alternate() {
+            //要求输出进制前缀
+            width += prefix.chars().count();
+            Some(prefix)
+        } else {
+            None
+        };
+
+        // 将符号及进制前缀输出
+        fn write_prefix(f: &amp;mut Formatter&lt;'_&gt;, sign: Option&lt;char&gt;, prefix: Option&lt;&amp;str&gt;) -&gt; Result {
+            if let Some(c) = sign {
+                f.buf.write_char(c)?;
+            }
+            if let Some(prefix) = prefix { f.buf.write_str(prefix) } else { Ok(()) }
+        }
+
+        match self.width {
+            //格式化参数中没有对字宽有要求
+            None =&gt; {
+                //写入符号及前缀
+                write_prefix(self, sign, prefix)?;
+                //写入基本内容
+                self.buf.write_str(buf)
+            }
+            //格式化参数有最小字宽要求,且当前字宽已经大于
+            //最小字宽
+            Some(min) if width &gt;= min =&gt; {
+                write_prefix(self, sign, prefix)?;
+                self.buf.write_str(buf)
+            }
+            //格式化参数有最小字宽要求，当前字宽小于最小字宽
+            //格式化参数规定填充0
+            Some(min) if self.sign_aware_zero_pad() =&gt; {
+                //不管输入的格式化参数中填充属性是什么，改变成为0
+                //因为后继要恢复，replace恰如其分
+                let old_fill = crate::mem::replace(&amp;mut self.fill, '0');
+                //不管输入的格式化参数中对齐属性是什么，改变成为右侧对齐
+                let old_align = crate::mem::replace(&amp;mut self.align, rt::v1::Alignment::Right);
+                //写入符号和前缀
+                write_prefix(self, sign, prefix)?;
+                //填充min-width个0，右侧对齐
+                //如果随后还要pading,则在post_padding返回
+                //padding方法见后继分析
+                let post_padding = self.padding(min - width, rt::v1::Alignment::Right)?;
+                //写入基本内容
+                self.buf.write_str(buf)?;
+                //继续完成padding
+                post_padding.write(self)?;
+                //恢复格式化参数中填充属性及对齐属性内容
+                self.fill = old_fill;
+                self.align = old_align;
+                Ok(())
+            }
+            // 格式化有最小字宽要求，当前字宽小于最小字宽，
+            // 填充为空
+            Some(min) =&gt; {
+                //先进性填充
+                let post_padding = self.padding(min - width, rt::v1::Alignment::Right)?;
+                //写入符号及前缀
+                write_prefix(self, sign, prefix)?;
+                //写入基本内容
+                self.buf.write_str(buf)?;
+                //继续完成padding
+                post_padding.write(self)
+            }
+        }
+    }
+
+    //完成格式化中的填充功能
+    pub(crate) fn padding(
+        &amp;mut self,
+        padding: usize,
+        default: rt::v1::Alignment,
+    ) -&gt; result::Result&lt;PostPadding, Error&gt; {
+        let align = match self.align {
+            rt::v1::Alignment::Unknown =&gt; default,
+            _ =&gt; self.align,
+        };
+
+        //确定基础内容之前padding和之后padding的字符数目
+        let (pre_pad, post_pad) = match align {
+            rt::v1::Alignment::Left =&gt; (0, padding),
+            rt::v1::Alignment::Right | rt::v1::Alignment::Unknown =&gt; (padding, 0),
+            rt::v1::Alignment::Center =&gt; (padding / 2, (padding + 1) / 2),
+        };
+
+        //完成基础内容之前的padding输出
+        for _ in 0..pre_pad {
+            self.buf.write_char(self.fill)?;
+        }
+
+        //创建基础内容之后padding的结构
+        Ok(PostPadding::new(self.fill, post_pad))
+    }
+
+}
+
+//PostPadding实现，在格式化内容基础内容之后进行填充
+pub(crate) struct PostPadding {
+    //填充字符
+    fill: char,
+    //填充字符数目
+    padding: usize,
+}
+
+impl PostPadding {
+    fn new(fill: char, padding: usize) -&gt; PostPadding {
+        PostPadding { fill, padding }
+    }
+
+    pub(crate) fn write(self, f: &amp;mut Formatter&lt;'_&gt;) -&gt; Result {
+        //输出padding内容
+        for _ in 0..self.padding {
+            f.buf.write_char(self.fill)?;
+        }
+        Ok(())
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>以上是格式化输出的代码基本脉络，格式化输出还有很多其他代码，请读者参考这个脉络自行研究</p>
+<p>对输出做格式化是非常复杂的可变参数支持的例子。从对以上的代码分析，在RUST支持可变参数的途径：</p>
+<ol>
+<li>首先定义一个支持可变参数的宏，例如foramt_args宏，这个宏将可变参数转变成一个数据结构，数据结构需要根据需要进行设计。</li>
+<li>根据数据结构设计方法或函数。</li>
+</ol>
+<p>Vec<T>中的vec！宏也是一个典型的可变参数实现，但其用途较单纯，因此也非常简单。可变参数是非常具有直观性及方便的语法。写一些库的时候需要经常用到。</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="10-智能指针类型(三).html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a rel="next" href="12-std库(一)FFI及内存管理.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="10-智能指针类型(三).html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next" href="12-std库(一)FFI及内存管理.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+        <script>
+            window.playground_copyable = true;
+        </script>
+        <script src="elasticlunr.min.js" charset="utf-8"></script>
+        <script src="mark.min.js" charset="utf-8"></script>
+        <script src="searcher.js" charset="utf-8"></script>
+        <script src="clipboard.min.js" charset="utf-8"></script>
+        <script src="highlight.js" charset="utf-8"></script>
+        <script src="book.js" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+    </body>
+</html>

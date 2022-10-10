@@ -1,0 +1,1185 @@
+<!DOCTYPE HTML>
+<html lang="zh-cn" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>基础Trait - rust-inside-std-book</title>
+        <!-- Custom HTML head -->
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="index.html">README</a></li><li class="chapter-item expanded affix "><a href="引言.html">引言</a></li><li class="chapter-item expanded affix "><a href="01-RUST库体系概述.html">RUST库体系概述</a></li><li class="chapter-item expanded affix "><a href="02-内存.html">内存</a></li><li class="chapter-item expanded affix "><a href="03-固有函数库及基础类型.html">固有函数库及基础类型</a></li><li class="chapter-item expanded affix "><a href="04-基础Trait.html" class="active">基础Trait</a></li><li class="chapter-item expanded affix "><a href="05-Iterator.html">Iterator</a></li><li class="chapter-item expanded affix "><a href="06-基本类型续.html">基本类型续</a></li><li class="chapter-item expanded affix "><a href="07-内部可变性类型.html">内部可变性类型</a></li><li class="chapter-item expanded affix "><a href="08-智能指针类型(一).html">智能指针类型(一)</a></li><li class="chapter-item expanded affix "><a href="09-智能指针类型(二).html">智能指针类型(二)</a></li><li class="chapter-item expanded affix "><a href="10-智能指针类型(三).html">智能指针类型(三)</a></li><li class="chapter-item expanded affix "><a href="11-智能指针类型(四).html">智能指针类型(四)</a></li><li class="chapter-item expanded affix "><a href="12-std库(一)FFI及内存管理.html">std库(一)FFI及内存管理</a></li><li class="chapter-item expanded affix "><a href="13-std库(二)文件描述符及进程管理.html">std库(二)文件描述符及进程管理</a></li><li class="chapter-item expanded affix "><a href="14-std库(三)线程间锁通信.html">std库(三)线程间锁通信</a></li><li class="chapter-item expanded affix "><a href="15-std库(四)线程临界区类型.html">std库(四)线程临界区类型</a></li><li class="chapter-item expanded affix "><a href="16-std库(五)线程管理.html">std库(五)线程管理</a></li><li class="chapter-item expanded affix "><a href="17-std库(六)mpsc通信.html">std库(六)mpsc通信</a></li><li class="chapter-item expanded affix "><a href="18-std库(七)RUST的RUNTIME.html">std库(七)RUST的RUNTIME</a></li><li class="chapter-item expanded affix "><a href="19-std库(八)RUST文件系统.html">std库(八)RUST文件系统</a></li><li class="chapter-item expanded affix "><a href="20-std库(九)RUST的IO.html">std库(九)RUST的IO</a></li><li class="chapter-item expanded affix "><a href="21-RUST的异步编程.html">RUST的异步编程</a></li><li class="chapter-item expanded affix "><a href="后记.html">后记</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">rust-inside-std-book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="rust标准库的基础trait"><a class="header" href="#rust标准库的基础trait">RUST标准库的基础Trait</a></h1>
+<h2 id="编译器内置trait代码分析"><a class="header" href="#编译器内置trait代码分析">编译器内置Trait代码分析</a></h2>
+<p>代码路径：
+%USER%.rustup\toolchains\nightly-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\marker.rs</p>
+<p>marker trait是没有实现体，是一种特殊的类型性质，这类性质无法用类型成员来表达，因此用trait来实现是最合适的。</p>
+<p>Send trait是标识变量类型可以安全的在线程间转移所有权的marker。<br />
+Sync trait是标识变量类型的引用可以安全的由多线程并发访问的marker。
+对于auto trait，RUST的默认规则是如果T支持auto trait，则<code>*const T, *mut T, [T], [T;N], &amp;T, &amp;mut T</code>都自动支持该auto trait, 如果实际情况不符合这条默认规则，需要在代码中显式声明。<br />
+如果一个复合类型的所有成员都支持auto trait, 则该复合类型支持auto trait。如果实际上不符合这条默认规则，也需要显式在代码作声明。<br />
+如果一个符合类型中有成员不支持auto trait, 但该复合类型支持auto trait, 需要在代码中作显式声明。</p>
+<p>变量在线程间安全指的是对变量操作需要具备事务性，在一个事务周期内只允许一个线程对变量进行读写。<br />
+RUST中，因为所有权和借用语法，对于大部分类型，不会出现多线程的并发操作。因此RUST类型默认都是实现了Send trait和Sync trait的，如果类型不支持Send或Sync或者有约束条件，需要进行显式的定义。
+在所有权转移后可能出现多线程并发操作的基本类型只有内部可变性类型的引用，裸指针，多份所有权的智能指针三种情况。
+目前可以多线程并发操作的类型有：</p>
+<ol>
+<li>内部可变性类型引用，</li>
+<li>具有递归到内部可变性类型成员的复合类型变量引用, 并且利用变量引用可触发内部可变操作</li>
+<li>具有递归到内部可变性引用类型成员的复合类型变量及变量引用，并且利用变量或变量引用可触发内部可变操作</li>
+<li><code>*const T/* mut T/NonNull&lt;T&gt;/Unique&lt;T&gt;</code>及引用，</li>
+<li>具有递归到4类型成员的复合类型变量及变量引用，并且利用变量及变量引用可触发对裸指针指向内容的改变</li>
+<li>支持多份所有权的智能指针，</li>
+<li>能够递归到多份所有权智能指针类型成员的复合类型变量及其引用，并且利用变量及变量引用可触发对智能指针操作。 </li>
+<li>对引用转换为裸指针后进行unsafe的操作<br />
+unsafe操作我们不做讨论。<br />
+对于上述1-6，都需要进行明确Send trait及Sync Trait的定义。 这里要注意的是RUST结构体内的成员默认私有，所以即使类型结构体有能多线程并发操作的成员，也不代表类型本身就能够被多线程并发操作。例如：只有当取得结构类型可变引用时，才能对内部可变性成员操作，就使得结构类型可以成为支持Send和Sync的类型。 这些情况下，需要做Send和Sync的显式声明。</li>
+</ol>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span>
+<span class="boring">fn main() {
+</span>pub unsafe auto trait Send {
+    // empty.
+}
+
+//以下因为与RUST的默认规则不一样，所以需要在代码中显式定义出来
+impl&lt;T: ?Sized&gt; !Send for *const T {}
+impl&lt;T: ?Sized&gt; !Send for *mut T {}
+
+//以下也是因为与RUST的默认规则不一致，所以需要显式的声明
+mod impls {
+    // 如果将&amp;T转移到其他线程，不支持Sync trait的类型利用&amp;T对变量的操作导致事务性不能保证。所以不能将&amp;T转移到其他线程，
+    unsafe impl&lt;T: Sync + ?Sized&gt; Send for &amp;T {}
+    // &amp;mut T具备独占性，导致线程外不会有其他写操作，包括内部可变性类型。
+    unsafe impl&lt;T: Send + ?Sized&gt; Send for &amp;mut T {}
+}
+
+  
+pub unsafe auto trait Sync {
+    // Empty
+}
+//与RUST代码默认规则不一致
+impl&lt;T: ?Sized&gt; !Sync for *const T {}
+impl&lt;T: ?Sized&gt; !Sync for *mut T {}
+
+//类型内存大小固定，泛型 &quot;T&quot; 默认是Sized，如果表示所有类型，需要 T:?Sized.
+pub trait Sized {
+    // Empty.
+}
+
+//如果一个Sized的类型要强制转换为动态大小类型，那必须实现Unsize Trait
+//例如 [T;N] 实现了 Unsize&lt;[T]&gt;
+pub trait Unsize&lt;T: ?Sized&gt; {
+    // Empty.
+}
+
+//模式匹配表达式匹配时编译器需要使用的Trait，如果一个结构实现了PartialEq，该Trait会自动被实现。
+pub trait StructuralPartialEq {
+    // Empty.
+}
+
+//主要用于模式匹配，如果一个结构实现了Eq, 该Trait会自动被实现。
+pub trait StructuralEq {
+    // Empty.
+}
+<span class="boring">}</span></code></pre></pre>
+<p>以下给出了一个针对所有的原生类型都实现Copy Trait的实现代码, 实现了Copy Trait的类型编译器不必调用drop来对类型进行内存释放。
+这也是RUST针对原生类型可以直接实现trait的实例。任意模块可以定义一个trait,然后即可在原生类型上实现这个trait，这极大的提高了RUST的语法一致性及函数式编程的能力：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//Copy，略
+pub trait Copy: Clone {
+    // Empty.
+}
+
+//统一实现原生类型对Copy Trait的支持
+mod copy_impls {
+
+    use super::Copy;
+
+    macro_rules! impl_copy {
+        ($($t:ty)*) =&gt; {
+            $(
+                impl Copy for $t {}
+            )*
+        }
+    }
+
+    impl_copy! {
+        usize u8 u16 u32 u64 u128
+        isize i8 i16 i32 i64 i128
+        f32 f64
+        bool char
+    }
+
+    impl Copy for ! {}
+
+    impl&lt;T: ?Sized&gt; Copy for *const T {}
+
+    impl&lt;T: ?Sized&gt; Copy for *mut T {}
+
+    impl&lt;T: ?Sized&gt; Copy for &amp;T {}
+
+    //&amp; mut T不支持Copy，以保证RUST的借用规则
+}
+<span class="boring">}</span></code></pre></pre>
+<p><code>PhantomData&lt;T&gt;</code>类型可以在其他类型结构体中定义一个变量，标记此结构体逻辑上拥有，但不需要或不方便在结构体成员变量体现的某个属性。实质上，智能指针一般都需要利用<code>Unique&lt;T&gt;</code>，以PhantomData来实现对堆内存的逻辑拥有权.
+PhantomData最常用来标记生命周期及所有权。主要给编译器提示检验类型变量的生命周期和类型构造时输入的生命周期关系。也用来提示拥有PhantomData<T>的结构体会负责对T做drop操作。需要编译器做drop检查的时候更准确的判断出内存安全错误。 
+<code>PhantomData&lt;T&gt;</code>属性与所有权或生命周期的关系由编译器自行推断。具体实例可参考官方标准库文档及后继相关章节。<br />
+PhantomData是个单元结构体，单元结构体的变量名就是单元结构体的类型名。<br />
+所以使用的时候直接使用PhantomData即可，编译器会将泛型的类型实例化信息自动带入PhantomData中</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct PhantomData&lt;T: ?Sized&gt;;
+<span class="boring">}</span></code></pre></pre>
+<h2 id="ops-运算符-trait-代码分析"><a class="header" href="#ops-运算符-trait-代码分析">ops 运算符 Trait 代码分析</a></h2>
+<p>代码路径如下：
+%USER%.rustup\toolchains\nightly-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\ops*.rs</p>
+<p>RUST中，所有的运算符号都可以重载。Ops重载允许提供<em>两个不同类型</em>之间的运算。</p>
+<h3 id="一个小规则"><a class="header" href="#一个小规则">一个小规则</a></h3>
+<p>在重载函数中，如果重载的符号出現，编译器用规定的默认操作来实现。例如：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>        impl const BitAnd for u8 {
+            type Output = u8;
+            //下面函数内部的 &amp; 符号不再引发重载，是编译器的默认按位与操作。
+            fn bitand(self, rhs: u8) -&gt; u8 { self &amp; u8 }
+        }
+
+
+<span class="boring">}</span></code></pre></pre>
+<h3 id="数学运算符-trait"><a class="header" href="#数学运算符-trait">数学运算符 Trait</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub trait Add&lt;Rhs = Self&gt; {
+    type Output;
+
+    //此函数会消费self, 设计一些复杂结构的加法
+    //时可能导致一些复杂性
+    fn add(self, rhs: Rhs) -&gt; Self::Output;
+}
+
+macro_rules! add_impl {
+    ($($t:ty)*) =&gt; ($(
+        //注意这里的const实现，代表trait里面的函数
+        //都是const函数,为了使得加法能够给const及static赋值
+        impl const Add for $t {
+            type Output = $t;
+
+            fn add(self, other: $t) -&gt; $t { self + other }
+        }
+
+        forward_ref_binop! { impl const Add, add for $t, $t }
+    )*)
+}
+//实现了所有数据类型的加法
+add_impl! { usize u8 u16 u32 u64 u128 isize i8 i16 i32 i64 i128 f32 f64 }
+
+
+pub trait AddAssign&lt;Rhs = Self&gt; {
+    //使用可变引用，与Add不同
+    fn add_assign(&amp;mut self, rhs: Rhs);
+}
+
+macro_rules! add_assign_impl {
+    ($($t:ty)+) =&gt; ($(
+        impl const AddAssign for $t {
+            fn add_assign(&amp;mut self, other: $t) { *self += other }
+        }
+
+        forward_ref_op_assign! { impl const AddAssign, add_assign for $t, $t }
+    )+)
+}
+//实现了所有数据类型的加法
+add_assign_impl! { usize u8 u16 u32 u64 u128 isize i8 i16 i32 i64 i128 f32 f64 }
+
+<span class="boring">}</span></code></pre></pre>
+<p>其他数学运算类似，略</p>
+<h3 id="位运算符-trait"><a class="header" href="#位运算符-trait">位运算符 Trait</a></h3>
+<p>与数学运算类似，略</p>
+<h3 id="关系运算符trait"><a class="header" href="#关系运算符trait">关系运算符Trait</a></h3>
+<p>代码路径如下：
+%USER%.rustup\toolchains\nightly-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\cmp.rs</p>
+<p>关系运算符的代码稍微复杂，这里给出较完整的代码。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//&quot;==&quot; &quot;!=&quot;的运算符trait，PartialEq用于在整个类型
+//定义域内存在值无法满足相等条件的情况。例如浮点类型 “NaN != NaN&quot; 
+//可以定义不同与self的泛型实现不同类型&quot;==&quot;及&quot;!=&quot;的运算
+pub trait PartialEq&lt;Rhs: ?Sized = Self&gt; {
+    /// “==” 重载方法
+    fn eq(&amp;self, other: &amp;Rhs) -&gt; bool;
+
+    ///`!=` 重载方法
+    fn ne(&amp;self, other: &amp;Rhs) -&gt; bool {
+        !self.eq(other)
+    }
+}
+
+//对于全作用域所有值都可相等的类型。实现Eq trait，
+//PartialEq和Eq区别实现，也是Rust安全性的体现之一
+//相等判断还是由PartialEq的方法负责
+pub trait Eq: PartialEq&lt;Self&gt; {
+    fn assert_receiver_is_total_eq(&amp;self) {}
+}
+<span class="boring">}</span></code></pre></pre>
+<p>对于&quot;&lt;,&gt;,&lt;=,&gt;=&quot;等四种运算，如果全域有可能出现无法比较的情况，仅实现<code>PartialOrd&lt;Rhs&gt;</code>，如下：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// &quot;&lt;&quot; &quot;&gt;&quot; &quot;&gt;=&quot; &quot;&lt;=&quot; 运算符重载结构, 事实上关系运算只需要重载这个Trait
+// Ord Trait 不用编码,
+// 可以为一个类型实现不同于此类型的PartialEq
+pub trait PartialOrd&lt;Rhs: ?Sized = Self&gt;: PartialEq&lt;Rhs&gt; {
+    // 显然，只能有一个比较函数, 对于全域都满足比较的，此函数内部一般用Ord
+    // Trait的cmp，对于无法比较的，需要实现独立的代码，如浮点,因为存在不可比较
+    //的值，所以需要用Option
+    fn partial_cmp(&amp;self, other: &amp;Rhs) -&gt; Option&lt;Ordering&gt;;
+
+    // &quot;&lt;&quot; 运算符重载
+    fn lt(&amp;self, other: &amp;Rhs) -&gt; bool {
+        matches!(self.partial_cmp(other), Some(Less))
+    }
+    
+    //&quot;&lt;=&quot;运算符重载
+    fn le(&amp;self, other: &amp;Rhs) -&gt; bool {
+        // Pattern `Some(Less | Eq)` optimizes worse than negating `None | Some(Greater)`.
+        !matches!(self.partial_cmp(other), None | Some(Greater))
+    }
+
+    //&quot;&gt;&quot;运算符重载, 代码略
+    fn gt(&amp;self, other: &amp;Rhs) -&gt; bool;
+    
+    //&quot;&gt;=&quot;运算符重载，代码略
+    fn ge(&amp;self, other: &amp;Rhs) -&gt; bool;
+
+    //eq已经在PatialEq中包含
+}
+
+//Ord是全域值都可比较的Trait，其与PartialOrd结果应该一致
+pub trait Ord: Eq + PartialOrd&lt;Self&gt; {
+    //通常partial_cmp() == Some(cmp()),因为全域值
+    //都可以比较，不会出现Ordering之外的情况
+    fn cmp(&amp;self, other: &amp;Self) -&gt; Ordering;
+
+    fn max(self, other: Self) -&gt; Self
+    where
+        Self: Sized,
+    {
+        //见下面代码分析
+        max_by(self, other, Ord::cmp)
+    }
+
+    fn min(self, other: Self) -&gt; Self
+    where
+        Self: Sized,
+    {
+        //见下面代码分析
+        min_by(self, other, Ord::cmp)
+    }
+
+    fn clamp(self, min: Self, max: Self) -&gt; Self
+    where
+        Self: Sized,
+    {
+        assert!(min &lt;= max);
+        if self &lt; min {
+            min
+        } else if self &gt; max {
+            max
+        } else {
+            self
+        }
+    }
+}
+//用于表示关系结果的结构体,注意此结构在函数式编程中的实用性
+#[derive(Clone, Copy, PartialEq, Debug, Hash)]
+#[repr(i8)]
+pub enum Ordering {
+    /// 小于.
+    Less = -1,
+    /// 等于.
+    Equal = 0,
+    /// 大于.
+    Greater = 1,
+}
+
+impl Ordering {
+    //对Ordering做逆操作, 代码略
+    pub const fn reverse(self) -&gt; Ordering ;
+
+    //用来简化代码及更好的支持函数式编程
+    //举例：
+    // let x: (i64, i64, i64) = (1, 2, 7);
+    // let y: (i64, i64, i64) = (1, 5, 3);
+    // let result = x.0.cmp(&amp;y.0).then(x.1.cmp(&amp;y.1)).then(x.2.cmp(&amp;y.2));
+    pub const fn then(self, other: Ordering) -&gt; Ordering {
+        match self {
+            Equal =&gt; other,
+            _ =&gt; self,
+        }
+    }
+
+    //用来简化代码实及支持函数式编程
+    pub fn then_with&lt;F: FnOnce() -&gt; Ordering&gt;(self, f: F) -&gt; Ordering {
+        match self {
+            Equal =&gt; f(),
+            _ =&gt; self,
+        }
+    }
+}
+
+//用输入的闭包比较函数获取两个值中大的一个
+pub fn max_by&lt;T, F: FnOnce(&amp;T, &amp;T) -&gt; Ordering&gt;(v1: T, v2: T, compare: F) -&gt; T {
+    match compare(&amp;v1, &amp;v2) {
+        Ordering::Less | Ordering::Equal =&gt; v2,
+        Ordering::Greater =&gt; v1,
+    }
+}
+
+//用输入的闭包比较函数获取两个值中小的一个
+pub fn min_by&lt;T, F: FnOnce(&amp;T, &amp;T) -&gt; Ordering&gt;(v1: T, v2: T, compare: F) -&gt; T {
+    match compare(&amp;v1, &amp;v2) {
+        Ordering::Less | Ordering::Equal =&gt; v1,
+        Ordering::Greater =&gt; v2,
+    }
+}
+
+//cmp::min 作为两变量取小的api调用
+pub fn min&lt;T: Ord&gt;(v1: T, v2: T) -&gt; T {
+    v1.min(v2)
+}
+
+//对变量生成key，两变量取小的key值变量的api
+pub fn min_by_key&lt;T, F: FnMut(&amp;T) -&gt; K, K: Ord&gt;(v1: T, v2: T, mut f: F) -&gt; T {
+    min_by(v1, v2, |v1, v2| f(v1).cmp(&amp;f(v2)))
+}
+
+//cmp::max 作为两变量取大的api调用
+pub fn max&lt;T: Ord&gt;(v1: T, v2: T) -&gt; T {
+    v1.max(v2)
+}
+
+//对变量生成key，两变量取大的key值的api
+pub fn max_by_key&lt;T, F: FnMut(&amp;T) -&gt; K, K: Ord&gt;(v1: T, v2: T, mut f: F) -&gt; T {
+    max_by(v1, v2, |v1, v2| f(v1).cmp(&amp;f(v2)))
+}
+<span class="boring">}</span></code></pre></pre>
+<p>以下是利用泛型和Adapter模式的典型的解决一类问题的RUST解决方案，下面是对有序的类型实现逆序的方案</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//对于实现了PartialOrd的类型实现一个Ord的反转，这个设计是典型的RUST的思考方式，
+//利用一个Adpater设计模式+泛型，很轻松的解决了一类需求
+//adapter的设计模式例子
+pub struct Reverse&lt;T&gt;(pub T);
+
+impl&lt;T: PartialOrd&gt; PartialOrd for Reverse&lt;T&gt; {
+    fn partial_cmp(&amp;self, other: &amp;Reverse&lt;T&gt;) -&gt; Option&lt;Ordering&gt; {
+        other.0.partial_cmp(&amp;self.0)
+    }
+
+    fn lt(&amp;self, other: &amp;Self) -&gt; bool {
+        other.0 &lt; self.0
+    }
+
+    //其他方法，略
+    ...
+    ...
+}
+<span class="boring">}</span></code></pre></pre>
+<p>以下是关系运算trait在原生类型上的实现</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 具体的实现宏 
+mod impls {
+    use crate::cmp::Ordering::{self, Equal, Greater, Less};
+    use crate::hint::unreachable_unchecked;
+    
+    //PartialEq在原生类型上的实现,利用宏减少重复代码
+    macro_rules! partial_eq_impl {
+        ($($t:ty)*) =&gt; ($(
+            //Rhs类型默认为Self
+            impl PartialEq for $t {
+                fn eq(&amp;self, other: &amp;$t) -&gt; bool { (*self) == (*other) }
+                fn ne(&amp;self, other: &amp;$t) -&gt; bool { (*self) != (*other) }
+            }
+        )*)
+    }
+    //单元类型，一定相等
+    impl PartialEq for () {
+        fn eq(&amp;self, _other: &amp;()) -&gt; bool {
+            true
+        }
+        fn ne(&amp;self, _other: &amp;()) -&gt; bool {
+            false
+        }
+    }
+    //所有类型都实现PartialEq
+    partial_eq_impl! {
+        bool char usize u8 u16 u32 u64 u128 isize i8 i16 i32 i64 i128 f32 f64
+    }
+    
+    macro_rules! eq_impl {
+        ($($t:ty)*) =&gt; ($(
+            #[stable(feature = &quot;rust1&quot;, since = &quot;1.0.0&quot;)]
+            impl Eq for $t {}
+        )*)
+    }
+
+    //浮点不实现Eq
+    eq_impl! { () bool char usize u8 u16 u32 u64 u128 isize i8 i16 i32 i64 i128 }
+
+    //关系运算，利用宏减少代码, 这个宏仅仅针对浮点数
+    macro_rules! partial_ord_impl {
+        ($($t:ty)*) =&gt; ($(
+            #[stable(feature = &quot;rust1&quot;, since = &quot;1.0.0&quot;)]
+            impl PartialOrd for $t {
+                fn partial_cmp(&amp;self, other: &amp;$t) -&gt; Option&lt;Ordering&gt; {
+                    //RUST的典型的代码，要记住这种简练的语法表达
+                    //这个表达主要是考虑到浮点, 注意这里是用了impl PartialOrd&lt;&amp;B&gt; for &amp;A
+                    //从而self &lt;= other导致对 （&amp;f32).le()的调用
+                    //为什么不直接使用(*self &lt;= *other, *self &gt;= *other)呢
+                    //提交了PR，最新的代码库已经修改了
+                    match (self &lt;= other, self &gt;= other) {
+                        (false, false) =&gt; None,
+                        (false, true) =&gt; Some(Greater),
+                        (true, false) =&gt; Some(Less),
+                        (true, true) =&gt; Some(Equal),
+                    }
+                }
+                //不使用默认函数
+                fn lt(&amp;self, other: &amp;$t) -&gt; bool { (*self) &lt; (*other) }
+                fn le(&amp;self, other: &amp;$t) -&gt; bool { (*self) &lt;= (*other) }
+                fn ge(&amp;self, other: &amp;$t) -&gt; bool { (*self) &gt;= (*other) }
+                fn gt(&amp;self, other: &amp;$t) -&gt; bool { (*self) &gt; (*other) }
+            }
+        )*)
+    }
+
+    //仅在浮点数实现
+    partial_ord_impl! { f32 f64 }
+    
+    //为支持全域值可比较的类型实现的宏
+    macro_rules! ord_impl {
+        ($($t:ty)*) =&gt; ($(
+            impl PartialOrd for $t {
+                //复用Ord的cmp函数
+                fn partial_cmp(&amp;self, other: &amp;$t) -&gt; Option&lt;Ordering&gt; {
+                    Some(self.cmp(other))
+                }
+                fn lt(&amp;self, other: &amp;$t) -&gt; bool { (*self) &lt; (*other) }
+                fn le(&amp;self, other: &amp;$t) -&gt; bool { (*self) &lt;= (*other) }
+                fn ge(&amp;self, other: &amp;$t) -&gt; bool { (*self) &gt;= (*other) }
+                fn gt(&amp;self, other: &amp;$t) -&gt; bool { (*self) &gt; (*other) }
+            }
+
+            impl Ord for $t {
+                fn cmp(&amp;self, other: &amp;$t) -&gt; Ordering {
+                    if *self &lt; *other { Less }
+                    else if *self == *other { Equal }
+                    else { Greater }
+                }
+            }
+        )*)
+    }
+    //浮点数不支持Ord
+    ord_impl! { char usize u8 u16 u32 u64 u128 isize i8 i16 i32 i64 i128 }
+
+    //A实现了PartialEq&lt;B&gt;, PartialOrd&lt;B&gt;后，对&amp;A实现PartialEq&lt;&amp;B&gt;， PartialOrd&lt;&amp;B&gt;
+    impl&lt;A: ?Sized, B: ?Sized&gt; PartialEq&lt;&amp;B&gt; for &amp;A
+    where
+        A: PartialEq&lt;B&gt;,
+    {
+        fn eq(&amp;self, other: &amp;&amp;B) -&gt; bool {
+            //注意这个调用方式，此时不能用self.eq调用。
+            //eq方法参数为引用
+            PartialEq::eq(*self, *other)
+        }
+        fn ne(&amp;self, other: &amp;&amp;B) -&gt; bool {
+            PartialEq::ne(*self, *other)
+        }
+    }
+    
+}
+
+<span class="boring">}</span></code></pre></pre>
+<p>以上较完整的给出了关系运算Trait的代码，可以看到，RUST标准库除了对原生类型做了Trait的实现，也针对受约束的泛型尽可能的做了关系运算符 Trait的实现，以便最大的减少后继的开发量。程序员需要精通RUST的标准库已经针对那些泛型类型做好了实现，避免再重复的造轮子。</p>
+<h3 id="运算符-trait代码分析"><a class="header" href="#运算符-trait代码分析">？运算符 Trait代码分析</a></h3>
+<p>代码路径：try_trait.rs</p>
+<p>?操作引入有两个目的：</p>
+<ol>
+<li>作为解封装的最简化代码表达形式</li>
+<li>作为try..catch..的RUST实现方式</li>
+</ol>
+<p>Try trait定义如下：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub trait Try: FromResidual {
+    /// ?操作如果结果正常，返回的解封装的正常变量类型
+    /// 具体实例可参考随后的Option的Try trait实现
+    type Output;
+
+    /// ?操作如果结果异常，返回解封装的异常变量类型
+    type Residual;
+
+    /// 从Self::Output解封装的正常类型变量获得封装后的类型变量的函数。当然，封装类型实现了Try trait
+    /// 函数必须符合下面代码的原则，
+    /// `Try::from_output(x).branch() --&gt; ControlFlow::Continue(x)`.
+    /// 例子：
+    /// ```
+    /// assert_eq!(&lt;Result&lt;_, String&gt; as Try&gt;::from_output(3), Ok(3));
+    /// assert_eq!(&lt;Option&lt;_&gt; as Try&gt;::from_output(4), Some(4));
+    /// assert_eq!(
+    ///     &lt;std::ops::ControlFlow&lt;String, _&gt; as Try&gt;::from_output(5),
+    ///     std::ops::ControlFlow::Continue(5),
+    /// );
+    fn from_output(output: Self::Output) -&gt; Self;
+
+    /// branch函数会返回ControlFlow类型变量，用以标识代码继续流程还是中断流程并提前返回
+    /// 例子：
+    ///
+    /// assert_eq!(Ok::&lt;_, String&gt;(3).branch(), ControlFlow::Continue(3));
+    /// assert_eq!(Err::&lt;String, _&gt;(3).branch(), ControlFlow::Break(Err(3)));
+    ///
+    /// assert_eq!(Some(3).branch(), ControlFlow::Continue(3));
+    /// assert_eq!(None::&lt;String&gt;.branch(), ControlFlow::Break(None));
+    ///
+    /// assert_eq!(ControlFlow::&lt;String, _&gt;::Continue(3).branch(), ControlFlow::Continue(3));
+    /// assert_eq!(
+    ///     ControlFlow::&lt;_, String&gt;::Break(3).branch(),
+    ///     ControlFlow::Break(ControlFlow::Break(3)),
+    /// );
+    fn branch(self) -&gt; ControlFlow&lt;Self::Residual, Self::Output&gt;;
+}
+
+pub trait FromResidual&lt;R = &lt;Self as Try&gt;::Residual&gt; {
+    /// 该函数从解封装的异常类型变量获取封装后的类型变量。封装后的类型实现了Try Trait。
+    ///
+    /// 此函数必须符合下面代码的原则
+    /// `FromResidual::from_residual(r).branch() --&gt; ControlFlow::Break(r)`.
+    /// 例子：
+    /// assert_eq!(Result::&lt;String, i64&gt;::from_residual(Err(3_u8)), Err(3));
+    /// assert_eq!(Option::&lt;String&gt;::from_residual(None), None);
+    /// assert_eq!(
+    ///     ControlFlow::&lt;_, String&gt;::from_residual(ControlFlow::Break(5)),
+    ///     ControlFlow::Break(5),
+    /// );
+    fn from_residual(residual: R) -&gt; Self;
+}
+<span class="boring">}</span></code></pre></pre>
+<p>Try Trait对? 操作支持的举例如下：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//不用? 操作的代码
+ pub fn simple_try_fold_3&lt;A, T, R: Try&lt;Output = A&gt;&gt;(
+     iter: impl Iterator&lt;Item = T&gt;,
+     mut accum: A,
+     mut f: impl FnMut(A, T) -&gt; R,
+ ) -&gt; R {
+     for x in iter {
+         let cf = f(accum, x).branch();
+         match cf {
+             ControlFlow::Continue(a) =&gt; accum = a,
+             ControlFlow::Break(r) =&gt; return R::from_residual(r),
+         }
+     }
+     R::from_output(accum)
+ }
+// 使用? 操作的代码:
+ fn simple_try_fold&lt;A, T, R: Try&lt;Output = A&gt;&gt;(
+     iter: impl Iterator&lt;Item = T&gt;,
+     mut accum: A,
+     mut f: impl FnMut(A, T) -&gt; R,
+ ) -&gt; R {
+     for x in iter {
+         accum = f(accum, x)?;
+     }
+     R::from_output(accum)
+ }
+<span class="boring">}</span></code></pre></pre>
+<p>由上，可推断出T?表示如下代码</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>   match((T as Try).branch()) {
+       ControlFlow::Continue(a) =&gt; a,
+       ControlFlow::Break(r) =&gt; return (T as Try)::from_residual(r),
+   }
+<span class="boring">}</span></code></pre></pre>
+<p>ControlFlow类型代码如下, 主要用于指示代码控制流程指示， 逻辑上可类比于continue, break 关键字 代码如下：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum ControlFlow&lt;B, C = ()&gt; {
+    //代码过程继续执行，可以从C中得到代码过程的中间结果
+    Continue(C),
+    /// 代码过程应退出，可以从B中得到代码退出时的中间结果
+    Break(B),
+}
+<span class="boring">}</span></code></pre></pre>
+<h4 id="option的try-trait实现"><a class="header" href="#option的try-trait实现">Option<T>的Try Trait实现</a></h4>
+<p>实现代码如下：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T&gt; ops::Try for Option&lt;T&gt; {
+    type Output = T;
+    // Infallible是一种错误类型，但该错误永远也不会发生，
+    // Residual 只可能是None，所以是Option类型，但是因为不会返回Some(),
+    // 所以T使用Infallible来表示不会有Some，这也表现了RUST的安全理念，
+    // 一定在类型定义的时候保证代码安全。
+    type Residual = Option&lt;convert::Infallible&gt;;
+
+    fn from_output(output: Self::Output) -&gt; Self {
+        Some(output)
+    }
+
+    fn branch(self) -&gt; ControlFlow&lt;Self::Residual, Self::Output&gt; {
+        match self {
+            Some(v) =&gt; ControlFlow::Continue(v),
+            None =&gt; ControlFlow::Break(None),
+        }
+    }
+}
+
+impl&lt;T&gt; const ops::FromResidual for Option&lt;T&gt; {
+    fn from_residual(residual: Option&lt;convert::Infallible&gt;) -&gt; Self {
+        match residual {
+            None =&gt; None,
+        }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>所以，一个Option<T>？等同于如下代码：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>   match(Option&lt;T&gt;.branch()) {
+       ControlFlow::Continue(a) =&gt; a,
+       //下面代码实际就是return None
+       ControlFlow::Break(None) =&gt; return (Option&lt;T&gt;::from_residual(None)),
+   }
+<span class="boring">}</span></code></pre></pre>
+<p>Result&lt;T,E&gt;类型的Try Trait请自行分析</p>
+<h4 id="小结"><a class="header" href="#小结">小结</a></h4>
+<p>利用Try Trait，程序员可以实现自定义类型的?，提供函数式编程的有力手段并简化代码，提升代码的理解度。</p>
+<h3 id="range-运算符代码分析"><a class="header" href="#range-运算符代码分析">Range 运算符代码分析</a></h3>
+<p>代码路径：<br />
+%USER%.rustup\toolchains\nightly-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\ops\range.rs</p>
+<p>Range是符号 .. , start..end , start.. , ..end , ..=end，start..=end 形式<br />
+代码书写虽然采用了上面的形式，但编译器将其转换成了不同的具体结构。如下：</p>
+<p><code>.. </code>的数据结构是 <code>RangeFull</code>,如下：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct RangeFull;
+<span class="boring">}</span></code></pre></pre>
+<p><code>start.. end</code>的数据结构 是 <code>Range&lt;Idx&gt;</code>,如下</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct Range&lt;Idx&gt; {
+    pub start: Idx,
+    pub end: Idx,
+}
+<span class="boring">}</span></code></pre></pre>
+<p><code>start..</code>的数据结构是<code>RangeFrom&lt;Idx&gt;</code>, 代码略
+<code>.. end</code>的数据结构是<code>RangeTo&lt;Idx&gt;</code>, 略
+<code>start..=end</code>的数据结构是<code>RangeInclusive&lt;Idx&gt;</code> 略
+<code>..=end</code>的数据结构是<code>RangeToInclusive&lt;Idx&gt;</code>,略</p>
+<p>以上的Idx需要满足Idx:PartialOrd<Idx></p>
+<p>为了明确上述结构中的边界值是否属于Range内部，定义了Range的边界类型结构Bound
+源代码：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum Bound&lt;T&gt; {
+    /// 边界包括在Range内
+    Included(T),
+    /// 边界不包括在Range内
+    Excluded(T),
+    /// 边界是无限的，边界不存在
+    Unbounded,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>利用<code>RangeBounds&lt;T: ?Sized&gt;</code>的trait实现了对Range的边界取值及判断某值是否在Range中。
+所有Range类型都实现了此trait。代码如下：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub trait RangeBounds&lt;T: ?Sized&gt; {
+    /// 获取范围的起始值
+    ///
+    /// 例子
+    /// assert_eq!((..10).start_bound(), Unbounded);
+    /// assert_eq!((3..10).start_bound(), Included(&amp;3));
+    fn start_bound(&amp;self) -&gt; Bound&lt;&amp;T&gt;;
+
+    /// 获取范围的终止值.
+    /// 例子
+    /// assert_eq!((3..).end_bound(), Unbounded);
+    /// assert_eq!((3..10).end_bound(), Excluded(&amp;10));
+    fn end_bound(&amp;self) -&gt; Bound&lt;&amp;T&gt;;
+
+    /// 范围是否包括某个值.
+    /// 例子
+    /// assert!( (3..5).contains(&amp;4));
+    /// assert!(!(3..5).contains(&amp;2));
+    ///
+    /// assert!( (0.0..1.0).contains(&amp;0.5));
+    /// assert!(!(0.0..1.0).contains(&amp;f32::NAN));
+    /// assert!(!(0.0..f32::NAN).contains(&amp;0.5));
+    /// assert!(!(f32::NAN..1.0).contains(&amp;0.5));
+    fn contains&lt;U&gt;(&amp;self, item: &amp;U) -&gt; bool
+    where
+        T: PartialOrd&lt;U&gt;,
+        U: ?Sized + PartialOrd&lt;T&gt;,
+    {
+        //比较有意思的典型的RUST代码
+        (match self.start_bound() {
+            Included(start) =&gt; start &lt;= item,
+            Excluded(start) =&gt; start &lt; item,
+            Unbounded =&gt; true,
+        }) &amp;&amp; (match self.end_bound() {
+            Included(end) =&gt; item &lt;= end,
+            Excluded(end) =&gt; item &lt; end,
+            Unbounded =&gt; true,
+        })
+    }
+}
+
+<span class="boring">}</span></code></pre></pre>
+<p>RangeBounds针对RangeFull，RangeTo, RangeInclusive, RangeToInclusive, RangeFrom, Range结构都进行了实现。同时针对(Bound<T>, Bound<T>)的元组做了实现。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T&gt; RangeBounds&lt;T&gt; for RangeFrom&lt;T&gt; {
+    fn start_bound(&amp;self) -&gt; Bound&lt;&amp;T&gt; {
+        Included(&amp;self.start)
+    }
+    fn end_bound(&amp;self) -&gt; Bound&lt;&amp;T&gt; {
+        Unbounded
+    }
+}
+
+impl&lt;T&gt; RangeBounds&lt;T&gt; for Range&lt;T&gt; {
+    fn start_bound(&amp;self) -&gt; Bound&lt;&amp;T&gt; {
+        Included(&amp;self.start)
+    }
+    fn end_bound(&amp;self) -&gt; Bound&lt;&amp;T&gt; {
+        Excluded(&amp;self.end)
+    }
+}
+//其他略
+
+<span class="boring">}</span></code></pre></pre>
+<h4 id="range的灵活性"><a class="header" href="#range的灵活性">Range的灵活性</a></h4>
+<p>完全可以定义 ((0,0)..(100,100))； (&quot;1st&quot;..&quot;30th&quot;)这种极有表现力的Range。
+Range使用的时候，需要先定义一个取值集合，定义类型表示这个集合，针对类型实现PartialOrd。就可以对这个集合的类型用Range符号了。
+值得注意的是，对于<code>Range&lt;Idx&gt;</code> ,如果一个变量类型为U, 则如果实现了<code>PartialOrd&lt;U&gt; for Idx</code>， 那U就有可能属于Range, 即U可以与Idx不同。
+Range操作符多用于与Index运算符结合或与Iterator Trait结合使用，在后继的Index运算符和Iterator中会研究Range是如何与他们结合的。</p>
+<h4 id="小结-1"><a class="header" href="#小结-1">小结</a></h4>
+<p>基于泛型的Range类型提供了非常好的语法手段，只要某类型支持排序，那就可以定义一个在此类型基础上实现的Range类型。再结合Index和Iterator, 将高效的实现极具冲击力的代码。</p>
+<h3 id="rust的index-运算符代码分析"><a class="header" href="#rust的index-运算符代码分析">RUST的Index 运算符代码分析</a></h3>
+<p>代码路径：<br />
+%USER%.rustup\toolchains\nightly-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\core\src\ops\index.rs</p>
+<p>数组下标符号[]由Index, IndexMut两个Trait完成重载。数组下标符号重载使得程序更有可读性。两个Trait如下定义：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// [T][Idx] 形式重载
+pub trait Index&lt;Idx: ?Sized&gt; {
+    /// The returned type after indexing.
+    type Output: ?Sized;
+
+    /// 如果传入的参数超过内存界限将马上引发panic
+    fn index(&amp;self, index: Idx) -&gt; &amp;Self::Output;
+}
+//mut [T][Idx]形式重载
+pub trait IndexMut&lt;Idx: ?Sized&gt;: Index&lt;Idx&gt; {
+    fn index_mut(&amp;mut self, index: Idx) -&gt; &amp;mut Self::Output;
+}
+<span class="boring">}</span></code></pre></pre>
+<p>由以上可以看出类似[&quot;Hary&quot;], [&quot;Bold&quot;]之类的下标表达形式都是可以存在的。</p>
+<h4 id="切片数据结构t的index实现"><a class="header" href="#切片数据结构t的index实现">切片数据结构[T]的Index实现</a></h4>
+<p>切片的Index实现采用了一个辅助的trait  <code>SliceIndex&lt;[T]&gt;</code>来支持。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T, I&gt; ops::Index&lt;I&gt; for [T]
+where
+    I: SliceIndex&lt;[T]&gt;,
+{
+    type Output = I::Output;
+
+    fn index(&amp;self, index: I) -&gt; &amp;I::Output {
+        index.index(self)
+    }
+}
+
+impl&lt;T, I&gt; ops::IndexMut&lt;I&gt; for [T]
+where
+    I: SliceIndex&lt;[T]&gt;,
+{
+    fn index_mut(&amp;mut self, index: I) -&gt; &amp;mut I::Output {
+        index.index_mut(self)
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>SliceIndex trait 被设计同时满足Index trait及切片类型自身方法的需求。因为这些需求在逻辑上是同领域的。集中在SliceIndex trait模块内聚性更好。如：
+<code>[T]::get&lt;I:SliceIndex&gt;(&amp;self, I)-&gt;Option&lt;&amp;I::Output&gt;</code> 就是直接调用SliceIndex中的方法来实现切片成员的获取。</p>
+<p>以下是SliceIndex trait的实现</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>mod private_slice_index {
+    use super::ops;
+    //在私有模块中定义一个Sealed Trait，后继的SliceIndex继承Sealed。
+    //带来的结果是只有在本模块实现了Sealed Trait的类型才能实现SliceIndex
+    //即使SliceIndex是公有定义，其他类型仍然不能够实现SliceIndex
+    pub trait Sealed {}
+
+    impl Sealed for usize {}
+    impl Sealed for ops::Range&lt;usize&gt; {}
+    impl Sealed for ops::RangeTo&lt;usize&gt; {}
+    impl Sealed for ops::RangeFrom&lt;usize&gt; {}
+    impl Sealed for ops::RangeFull {}
+    impl Sealed for ops::RangeInclusive&lt;usize&gt; {}
+    impl Sealed for ops::RangeToInclusive&lt;usize&gt; {}
+    impl Sealed for (ops::Bound&lt;usize&gt;, ops::Bound&lt;usize&gt;) {}
+}
+
+pub unsafe trait SliceIndex&lt;T: ?Sized&gt;: private_slice_index::Sealed {
+    /// 此类型通常为T或者T的引用，切片，裸指针类型
+    type Output: ?Sized;
+
+    // 从slice变量中用self获取Option&lt;Output&gt;变量
+    fn get(self, slice: &amp;T) -&gt; Option&lt;&amp;Self::Output&gt;;
+
+    fn get_mut(self, slice: &amp;mut T) -&gt; Option&lt;&amp;mut Self::Output&gt;;
+
+    //slice是序列的头指针，后面的具体实现会看到为什么用 *const
+    unsafe fn get_unchecked(self, slice: *const T) -&gt; *const Self::Output;
+
+    unsafe fn get_unchecked_mut(self, slice: *mut T) -&gt; *mut Self::Output;
+    
+    //如果self超出slice的安全范围，会panic
+    fn index(self, slice: &amp;T) -&gt; &amp;Self::Output;
+
+    fn index_mut(self, slice: &amp;mut T) -&gt; &amp;mut Self::Output;
+}
+
+//为usize实现SliceIndex
+unsafe impl&lt;T&gt; SliceIndex&lt;[T]&gt; for usize {
+    type Output = T;
+
+    //此函数主要用在不适合使用下标时，例如不确定切片长度，又不希望panic
+    fn get(self, slice: &amp;[T]) -&gt; Option&lt;&amp;T&gt; {
+        // 这里slice 被强制转化成了* const [T]
+        if self &lt; slice.len() { unsafe { Some(&amp;*self.get_unchecked(slice)) } } else { None }
+    }
+
+    fn get_mut(self, slice: &amp;mut [T]) -&gt; Option&lt;&amp;mut T&gt; {
+        //这里slice 被强制转化成了*mut [T]
+        if self &lt; slice.len() { unsafe { Some(&amp;mut *self.get_unchecked_mut(slice)) } } else { None }
+    }
+    
+    //此函数主要用在不适合下标的情况下
+    unsafe fn get_unchecked(self, slice: *const [T]) -&gt; *const T {
+        //slice.as_ptr()获得* const T，利用* const T的add方法来取得slice成员的地址
+        unsafe { slice.as_ptr().add(self) }
+    }
+
+    unsafe fn get_unchecked_mut(self, slice: *mut [T]) -&gt; *mut T {
+        //as_mut_ptr返回* mut T指针，在用add方法获得成员地址。
+        unsafe { slice.as_mut_ptr().add(self) }
+    }
+
+    fn index(self, slice: &amp;[T]) -&gt; &amp;T {
+        //使用编译器内置支持，为了效率直接使用了内置的数组下标表示。此操作可能引发panic
+        &amp;(*slice)[self]
+    }
+
+    fn index_mut(self, slice: &amp;mut [T]) -&gt; &amp;mut T {
+        // 使用编译器内置下标运算符，可能引发panic
+        &amp;mut (*slice)[self]
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>以上就是针对[T]的以无符号数作为下标取出单一元素的ops::Index 及 ops::IndexMut的底层实现。</p>
+<p>针对Range做下标的代码实现</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>unsafe impl&lt;T&gt; SliceIndex&lt;[T]&gt; for ops::Range&lt;usize&gt; {
+    type Output = [T];
+    
+    //不会引发panic的方法
+    //此处注意，self是Rang&lt;usize&gt;
+    fn get(self, slice: &amp;[T]) -&gt; Option&lt;&amp;[T]&gt; {
+        //提前做判断
+        if self.start &gt; self.end || self.end &gt; slice.len() {
+            None
+        } else {
+            unsafe { Some(&amp;*self.get_unchecked(slice)) }
+        }
+    }
+    
+    //可变引用获取
+    fn get_mut(self, slice: &amp;mut [T]) -&gt; Option&lt;&amp;mut [T]&gt; {
+        if self.start &gt; self.end || self.end &gt; slice.len() {
+            None
+        } else {
+            unsafe { Some(&amp;mut *self.get_unchecked_mut(slice)) }
+        }
+    }
+
+    //不对输出参数做判断, 调用者要保证输入参数没有问题
+    unsafe fn get_unchecked(self, slice: *const [T]) -&gt; *const [T] {
+        // 先将*const [T] 转换为 * const T，完成指针运算，然后再转换成* const [T]
+        unsafe { ptr::slice_from_raw_parts(slice.as_ptr().add(self.start), self.end - self.start) }
+    }
+    
+    //与上面函数类似，略
+    unsafe fn get_unchecked_mut(self, slice: *mut [T]) -&gt; *mut [T] {
+        unsafe {
+            ptr::slice_from_raw_parts_mut(slice.as_mut_ptr().add(self.start), self.end - self.start)
+        }
+    }
+
+    fn index(self, slice: &amp;[T]) -&gt; &amp;[T] {
+        //超出范围会直接panic
+        if self.start &gt; self.end {
+            slice_index_order_fail(self.start, self.end);
+        } else if self.end &gt; slice.len() {
+            slice_end_index_len_fail(self.end, slice.len());
+        }
+        //将* const [T]转化为切片引用
+        unsafe { &amp;*self.get_unchecked(slice) }
+    }
+
+    fn index_mut(self, slice: &amp;mut [T]) -&gt; &amp;mut [T] {
+        //超出范围会直接panic
+        if self.start &gt; self.end {
+            slice_index_order_fail(self.start, self.end);
+        } else if self.end &gt; slice.len() {
+            slice_end_index_len_fail(self.end, slice.len());
+        }
+        unsafe { &amp;mut *self.get_unchecked_mut(slice) }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>以上是实现用Range从slice中取出子slice的实现。同样是使用裸指针来达到最高效率。实际上，不用裸指针就没法实现。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>unsafe impl&lt;T&gt; SliceIndex&lt;[T]&gt; for ops::RangeTo&lt;usize&gt; {
+    type Output = [T];
+
+    fn get(self, slice: &amp;[T]) -&gt; Option&lt;&amp;[T]&gt; {
+        //将RangeTo转换成Range, 然后对ops::Range&lt;usize&gt;的方法直接调用
+        (0..self.end).get(slice)
+    }
+
+    fn get_mut(self, slice: &amp;mut [T]) -&gt; Option&lt;&amp;mut [T]&gt; {
+        //对ops::Range&lt;usize&gt;的方法直接调用
+        (0..self.end).get_mut(slice)
+    }
+    
+    //其他方法也是直接对Range&lt;usize&gt;的实现做调用， 略
+}
+<span class="boring">}</span></code></pre></pre>
+<p>RangeFrom, RangeInclusive, RangeToInclusive, RangeFull等与RangeTo的实现类似，略。</p>
+<h5 id="小结-2"><a class="header" href="#小结-2">小结</a></h5>
+<p>RUST切片的下标计算展示了裸指针的使用技巧，在数组类的成员操作中，基本无法脱离裸指针。在这里，只要不越界，裸指针操作是安全的。</p>
+<h4 id="数组数据结构tn的opsindex实现"><a class="header" href="#数组数据结构tn的opsindex实现">数组数据结构[T;N]的ops::Index实现</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//注意这里的常量的Trait约束的写法
+impl&lt;T, I, const N: usize&gt; Index&lt;I&gt; for [T; N]
+where
+    [T]: Index&lt;I&gt;,
+{
+    type Output = &lt;[T] as Index&lt;I&gt;&gt;::Output;
+
+    fn index(&amp;self, index: I) -&gt; &amp;Self::Output {
+        Index::index(self as &amp;[T], index)
+    }
+}
+
+impl&lt;T, I, const N: usize&gt; IndexMut&lt;I&gt; for [T; N]
+where
+    [T]: IndexMut&lt;I&gt;,
+{
+    fn index_mut(&amp;mut self, index: I) -&gt; &amp;mut Self::Output {
+        IndexMut::index_mut(self as &amp;mut [T], index)
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>以上， <code>self as &amp;[T]</code> 即把[T;N]转化为了切片[T], 所以数组的Index就是[T]的Index实现</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="03-固有函数库及基础类型.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a rel="next" href="05-Iterator.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="03-固有函数库及基础类型.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next" href="05-Iterator.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+        <script>
+            window.playground_copyable = true;
+        </script>
+        <script src="elasticlunr.min.js" charset="utf-8"></script>
+        <script src="mark.min.js" charset="utf-8"></script>
+        <script src="searcher.js" charset="utf-8"></script>
+        <script src="clipboard.min.js" charset="utf-8"></script>
+        <script src="highlight.js" charset="utf-8"></script>
+        <script src="book.js" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+    </body>
+</html>

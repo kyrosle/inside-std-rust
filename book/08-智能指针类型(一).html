@@ -1,0 +1,751 @@
+<!DOCTYPE HTML>
+<html lang="zh-cn" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>智能指针类型(一) - rust-inside-std-book</title>
+        <!-- Custom HTML head -->
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="index.html">README</a></li><li class="chapter-item expanded affix "><a href="引言.html">引言</a></li><li class="chapter-item expanded affix "><a href="01-RUST库体系概述.html">RUST库体系概述</a></li><li class="chapter-item expanded affix "><a href="02-内存.html">内存</a></li><li class="chapter-item expanded affix "><a href="03-固有函数库及基础类型.html">固有函数库及基础类型</a></li><li class="chapter-item expanded affix "><a href="04-基础Trait.html">基础Trait</a></li><li class="chapter-item expanded affix "><a href="05-Iterator.html">Iterator</a></li><li class="chapter-item expanded affix "><a href="06-基本类型续.html">基本类型续</a></li><li class="chapter-item expanded affix "><a href="07-内部可变性类型.html">内部可变性类型</a></li><li class="chapter-item expanded affix "><a href="08-智能指针类型(一).html" class="active">智能指针类型(一)</a></li><li class="chapter-item expanded affix "><a href="09-智能指针类型(二).html">智能指针类型(二)</a></li><li class="chapter-item expanded affix "><a href="10-智能指针类型(三).html">智能指针类型(三)</a></li><li class="chapter-item expanded affix "><a href="11-智能指针类型(四).html">智能指针类型(四)</a></li><li class="chapter-item expanded affix "><a href="12-std库(一)FFI及内存管理.html">std库(一)FFI及内存管理</a></li><li class="chapter-item expanded affix "><a href="13-std库(二)文件描述符及进程管理.html">std库(二)文件描述符及进程管理</a></li><li class="chapter-item expanded affix "><a href="14-std库(三)线程间锁通信.html">std库(三)线程间锁通信</a></li><li class="chapter-item expanded affix "><a href="15-std库(四)线程临界区类型.html">std库(四)线程临界区类型</a></li><li class="chapter-item expanded affix "><a href="16-std库(五)线程管理.html">std库(五)线程管理</a></li><li class="chapter-item expanded affix "><a href="17-std库(六)mpsc通信.html">std库(六)mpsc通信</a></li><li class="chapter-item expanded affix "><a href="18-std库(七)RUST的RUNTIME.html">std库(七)RUST的RUNTIME</a></li><li class="chapter-item expanded affix "><a href="19-std库(八)RUST文件系统.html">std库(八)RUST文件系统</a></li><li class="chapter-item expanded affix "><a href="20-std库(九)RUST的IO.html">std库(九)RUST的IO</a></li><li class="chapter-item expanded affix "><a href="21-RUST的异步编程.html">RUST的异步编程</a></li><li class="chapter-item expanded affix "><a href="后记.html">后记</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">rust-inside-std-book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="智能指针"><a class="header" href="#智能指针">智能指针</a></h1>
+<h2 id="box代码分析"><a class="header" href="#box代码分析">Box<T>代码分析</a></h2>
+<p>除了数组外的智能指针的堆内存申请，一般都先由Box<T>来完成，然后再将申请到的内存转移到智能指针自身的结构中。</p>
+<p>以下为Box<T>结构定义及创建方法相关内容：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//Box结构
+pub struct Box&lt;
+    T: ?Sized,
+    //默认的堆内存申请为Global单元结构体，可修改为其他
+    A: Allocator = Global,
+  //用Unique&lt;T&gt;表示对申请的堆内存拥有所有权  
+&gt;(Unique&lt;T&gt;, A);
+<span class="boring">}</span></code></pre></pre>
+<p>Box<T>的创建方法：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//以Global作为默认的堆内存分配器的实现
+impl&lt;T&gt; Box&lt;T&gt; {
+    pub fn new(x: T) -&gt; Self {
+        //box 是关键字，就是实现从堆内存申请内存，写入内容然后形成Box&lt;T&gt;
+        //这个关键字的功能可以从后继的方法中分析出来, 此方法实际等同与new_in(x, Global);
+        box x
+    }
+    ...
+}
+
+//不限定堆内存分配器的更加通用的方法实现
+impl&lt;T, A: Allocator&gt; Box&lt;T, A&gt; {
+
+    //Box::new(x) 实际上的逻辑等同与 Box::new_in(x, Global)
+    pub fn new_in(x: T, alloc: A) -&gt; Self {
+        //new_uninit_in见后面代码分析
+        let mut boxed = Self::new_uninit_in(alloc);
+        unsafe {
+            //实际是MaybeUninit&lt;T&gt;::as_mut_ptr()得到*mut T，::write将x写入申请的堆内存中
+            boxed.as_mut_ptr().write(x);
+            //从Box&lt;MaybeUninit&lt;T&gt;,A&gt;转换为Box&lt;T,A&gt;
+            boxed.assume_init()
+        }
+    }
+
+    //内存部分章节有过分析
+    pub fn new_uninit_in(alloc: A) -&gt; Box&lt;mem::MaybeUninit&lt;T&gt;, A&gt; {
+        //获取Layout以便申请堆内存
+        let layout = Layout::new::&lt;mem::MaybeUninit&lt;T&gt;&gt;();
+        //见后面的代码分析
+        match Box::try_new_uninit_in(alloc) {
+            Ok(m) =&gt; m,
+            Err(_) =&gt; handle_alloc_error(layout),
+        }
+    }
+
+    //内存申请的真正执行函数
+    pub fn try_new_uninit_in(alloc: A) -&gt; Result&lt;Box&lt;mem::MaybeUninit&lt;T&gt;, A&gt;, AllocError&gt; {
+        //申请内存需要的内存Layout
+        let layout = Layout::new::&lt;mem::MaybeUninit&lt;T&gt;&gt;();
+        //申请内存并完成错误处理，cast将NonNull&lt;[u8]&gt;转换为NonNull&lt;MaybeUninit&lt;T&gt;&gt;
+        //NonNull&lt;MaybeUninit&lt;T&gt;&gt;.as_ptr为 *mut &lt;MaybeUninit&lt;T&gt;&gt;
+        //后继Box的drop会释放此处的内存
+        //from_raw_in即将ptr转换为Unique&lt;T&gt;并形成Box结构变量
+        let ptr = alloc.allocate(layout)?.cast();
+        unsafe { Ok(Box::from_raw_in(ptr.as_ptr(), alloc)) }
+    }
+
+    ...
+}
+
+impl&lt;T, A: Allocator&gt; Box&lt;mem::MaybeUninit&lt;T&gt;, A&gt; {
+    //申请的未初始化内存，初始化后，应该调用这个函数将
+    //Box&lt;MaybeUninit&lt;T&gt;&gt;转换为Box&lt;T&gt;，
+    pub unsafe fn assume_init(self) -&gt; Box&lt;T, A&gt; {
+        //因为类型不匹配，且无法强制转换，所以先将self消费掉并获得
+        //堆内存的裸指针，再用裸指针生成新的Box，完成类型转换V
+        let (raw, alloc) = Box::into_raw_with_allocator(self);
+        unsafe { Box::from_raw_in(raw as *mut T, alloc) }
+    }
+}
+impl&lt;T: ?Sized, A: Allocator&gt; Box&lt;T, A&gt; {
+    //从裸指针构建Box类型，裸指针应该是申请堆内存返回的指针
+    //用这个方法生成Box，当Box被drop时，会引发对裸指针的释放操作
+    pub unsafe fn from_raw_in(raw: *mut T, alloc: A) -&gt; Self {
+        //由裸指针生成Unique，再生成Box
+        Box(unsafe { Unique::new_unchecked(raw) }, alloc)
+    }
+    
+    //此函数会将传入的b:Box消费掉，并将内部的Unique也消费掉，
+    //返回裸指针，此时裸指针指向的内存已经不会再被drop.
+    pub fn into_raw_with_allocator(b: Self) -&gt; (*mut T, A) {
+        let (leaked, alloc) = Box::into_unique(b);
+        (leaked.as_ptr(), alloc)
+    }
+    pub fn into_unique(b: Self) -&gt; (Unique&lt;T&gt;, A) {
+        //对b的alloc做了一份拷贝
+        let alloc = unsafe { ptr::read(&amp;b.1) };
+        //Box::leak(b)返回&amp;mut T可变引用，具体分析见下文
+        //leak(b)生成的&amp;mut T实质上已经不会有Drop调用释放
+        (Unique::from(Box::leak(b)), alloc)
+    }
+
+    //将b消费掉，并将b内的变量取出来返回
+    pub fn leak&lt;'a&gt;(b: Self) -&gt; &amp;'a mut T
+    where
+        A: 'a,
+    {
+        //生成ManuallyDrop&lt;Box&lt;T&gt;&gt;, 消费掉了b，此时不会再对b做Drop调用，导致了一个内存leak
+        //ManuallyDrop&lt;Box&lt;T&gt;&gt;.0 是Box&lt;T&gt;，ManuallyDrop&lt;T&gt;没有.0的语法，因此会先做解引用，是&amp;Box&lt;T&gt;
+        //&amp;Box&lt;T&gt;.0即Unique&lt;T&gt;，Unique&lt;T&gt;.as_ptr获得裸指针，然后利用unsafe代码生成可变引用
+        unsafe { &amp;mut *mem::ManuallyDrop::new(b).0.as_ptr() }
+    }
+    ...
+}
+
+unsafe impl&lt; T: ?Sized, A: Allocator&gt; Drop for Box&lt;T, A&gt; {
+    fn drop(&amp;mut self) {
+        // FIXME: Do nothing, drop is currently performed by compiler.
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>以上是Box的最常用的创建方法的代码。对于所有的堆申请，申请后的内存变量类型是MaybeUninit<T>，然后对MaybeUninit<T>用ptr::write完成初始化，随后再assume_init进入正常变量状态，这是rust的基本套路。</p>
+<p>Box<T>的Pin方法：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T&gt; Box&lt;T&gt; {
+    //如果T没有实现Unpin Trait, 则内存不会移动
+    pub fn pin(x: T) -&gt; Pin&lt;Box&lt;T&gt;&gt; {
+        //任意的指针可以Into到Pin,因为Pin实现了任意类型的可变引用的From trait
+        (box x).into()
+    }
+    ...
+}
+impl&lt;T:?Sized&gt; Box&lt;T&gt; {}
+    pub fn into_pin(boxed: Self) -&gt; Pin&lt;Self&gt;
+    where
+        A: 'static,
+    {
+        unsafe { Pin::new_unchecked(boxed) }
+    }
+    ...
+}
+//不限定堆内存分配器的更加通用的方法实现
+impl&lt;T, A: Allocator&gt; Box&lt;T, A&gt; {
+    //生成Box&lt;T&gt;后，在用Into&lt;Pin&gt; Trait生成Pin&lt;Box&gt;
+    pub fn pin_in(x: T, alloc: A) -&gt; Pin&lt;Self&gt;
+    where
+        A: 'static,
+    {
+        Self::new_in(x, alloc).into()
+    }
+
+    ...
+}
+<span class="boring">}</span></code></pre></pre>
+<p>Box&lt;[T]&gt;的方法：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T,A:Allocator&gt; Box&lt;T, A&gt; {
+    //切片
+    pub fn into_boxed_slice(boxed: Self) -&gt; Box&lt;[T], A&gt; {
+        //要转换指针类型，需要先得到裸指针
+        let (raw, alloc) = Box::into_raw_with_allocator(boxed);
+        //将裸指针转换为切片裸指针，再生成Box, 此处因为不知道长度，
+        //只能转换成长度为1的切片指针
+        unsafe { Box::from_raw_in(raw as *mut [T; 1], alloc) }
+    }
+    ...
+}
+
+impl&lt;T, A: Allocator&gt; Box&lt;[T], A&gt; {
+    //使用RawVec作为底层堆内存管理结构，并转换为Box
+    pub fn new_uninit_slice_in(len: usize, alloc: A) -&gt; Box&lt;[mem::MaybeUninit&lt;T&gt;], A&gt; {
+        unsafe { RawVec::with_capacity_in(len, alloc).into_box(len) }
+    }
+
+    //内存清零
+    pub fn new_zeroed_slice_in(len: usize, alloc: A) -&gt; Box&lt;[mem::MaybeUninit&lt;T&gt;], A&gt; {
+        unsafe { RawVec::with_capacity_zeroed_in(len, alloc).into_box(len) }
+    }
+}
+impl&lt;T, A: Allocator&gt; Box&lt;[mem::MaybeUninit&lt;T&gt;], A&gt; {
+    //初始化完毕， 
+    pub unsafe fn assume_init(self) -&gt; Box&lt;[T], A&gt; {
+        let (raw, alloc) = Box::into_raw_with_allocator(self);
+        unsafe { Box::from_raw_in(raw as *mut [T], alloc) }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>其他方法及trait:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: Default&gt; Default for Box&lt;T&gt; {
+    /// Creates a `Box&lt;T&gt;`, with the `Default` value for T.
+    fn default() -&gt; Self {
+        box T::default()
+    }
+}
+
+impl&lt;T,A:Allocator&gt; Box&lt;T, A&gt; {
+    //消费掉Box，获取内部变量
+    pub fn into_inner(boxed: Self) -&gt; T {
+        //对Box的*操作就是完成Box接口从堆内存到栈内存拷贝
+        //然后调用Box的drop, 返回栈内存。编译器内置的操作
+        *boxed
+    }
+    ...
+}
+<span class="boring">}</span></code></pre></pre>
+<p>以上即为Box<T>创建及析构的所有相关代码，其中较难理解的是leak方法。在RUST中，惯例对内存申请一般会使用Box<T>来实现，如果需要将申请的内存以另外的智能指针结构做封装，则调用Box::leak将堆指针传递出来</p>
+<h2 id="rawvec代码分析"><a class="header" href="#rawvec代码分析">RawVec<T>代码分析</a></h2>
+<p>RawVec<T>用于指向一块从堆内存申请出来的某一类型数据的数组buffer，可以未初始化或初始化为零。与数组有关的智能指针底层的内存申请基本上都采用了RawVec<T>
+RawVec<T>的结构体，创建及Drop相关方法：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>enum AllocInit {
+    /// 内存块没有初始化
+    Uninitialized,
+    /// 内存块被初始化为0
+    Zeroed,
+}
+pub(crate) struct RawVec&lt;T, A: Allocator = Global&gt; {
+    //指向堆内存地址
+    ptr: Unique&lt;T&gt;,
+    //内存块中含有T类型变量的数目
+    cap: usize,
+    //Allocator 变量
+    alloc: A,
+}
+
+impl&lt;T&gt; RawVec&lt;T, Global&gt; {
+    //语法上的要求，一些const fn 只能调用const fn，所以这里设定了一个const 变量
+    pub const NEW: Self = Self::new();
+
+    // 一些创建方法，但仅仅是对其他函数调用，代码略
+    pub const fn new() -&gt; Self;
+    pub fn with_capacity(capacity: usize) -&gt; Self;
+    pub fn with_capacity_zeroed(capacity: usize) -&gt; Self;
+}
+
+impl&lt;T, A: Allocator&gt; RawVec&lt;T, A&gt; {
+    // 最少申请的容量大小
+    const MIN_NON_ZERO_CAP: usize = if mem::size_of::&lt;T&gt;() == 1 {
+        8
+    } else if mem::size_of::&lt;T&gt;() &lt;= 1024 {
+        4
+    } else {
+        1
+    };
+
+    //设置一个内存块大小为0的变量
+    pub const fn new_in(alloc: A) -&gt; Self {
+        // `cap: 0` means &quot;unallocated&quot;. zero-sized types are ignored.
+        Self { ptr: Unique::dangling(), cap: 0, alloc }
+    }
+
+    //申请给定容量的内存块，内存块未初始化
+    pub fn with_capacity_in(capacity: usize, alloc: A) -&gt; Self {
+        //见后继说明
+        Self::allocate_in(capacity, AllocInit::Uninitialized, alloc)
+    }
+
+    //申请给定容量的内存块，内存块初始化为全零
+    pub fn with_capacity_zeroed_in(capacity: usize, alloc: A) -&gt; Self {
+        Self::allocate_in(capacity, AllocInit::Zeroed, alloc)
+    }
+
+    //堆内存申请函数
+    fn allocate_in(capacity: usize, init: AllocInit, alloc: A) -&gt; Self {
+        //ZST的类型不用申请
+        if mem::size_of::&lt;T&gt;() == 0 {
+            Self::new_in(alloc)
+        } else {
+            //获取T类型的layout,注意是用array类型来获取整个size
+            let layout = match Layout::array::&lt;T&gt;(capacity) {
+                Ok(layout) =&gt; layout,
+                Err(_) =&gt; capacity_overflow(),
+            };
+            //看堆内存是否有足够的空间
+            match alloc_guard(layout.size()) {
+                Ok(_) =&gt; {}
+                Err(_) =&gt; capacity_overflow(),
+            }
+            //申请内存返回是NonNull&lt;[u8]&gt;，NonNull&lt;[u8]&gt;包含了长度信息
+            let result = match init {
+                AllocInit::Uninitialized =&gt; alloc.allocate(layout),
+                AllocInit::Zeroed =&gt; alloc.allocate_zeroed(layout),
+            };
+            //处理可能的错误
+            let ptr = match result {
+                Ok(ptr) =&gt; ptr,
+                Err(_) =&gt; handle_alloc_error(layout),
+            };
+
+            Self {
+                //直接将NonNull&lt;[u8]&gt;转化为NonNull&lt;T&gt;,再转换为 *mut T
+                //再生成Unique&lt;T&gt;, 注意*mut T此时没有长度信息
+                ptr: unsafe { Unique::new_unchecked(ptr.cast().as_ptr()) },
+                //用申请的字节数，ptr不要和上面一行的ptr搞混掉。
+                //NonNull&lt;[u8]&gt;附带有长度信息
+                cap: Self::capacity_from_bytes(ptr.len()),
+                alloc,
+            }
+        }
+    }
+
+    //由元数据直接生成，调用代码需要保证输入参数是正确的
+    pub unsafe fn from_raw_parts_in(ptr: *mut T, capacity: usize, alloc: A) -&gt; Self {
+        Self { ptr: unsafe { Unique::new_unchecked(ptr) }, cap: capacity, alloc }
+    }
+
+    //返回与allocator申请到的一致的内存变量
+    fn current_memory(&amp;self) -&gt; Option&lt;(NonNull&lt;u8&gt;, Layout)&gt; {
+        if mem::size_of::&lt;T&gt;() == 0 || self.cap == 0 {
+            None
+        } else {
+            // We have an allocated chunk of memory, so we can bypass runtime
+            // checks to get our current layout.
+            unsafe {
+                let align = mem::align_of::&lt;T&gt;();
+                let size = mem::size_of::&lt;T&gt;() * self.cap;
+                let layout = Layout::from_size_align_unchecked(size, align);
+                Some((self.ptr.cast().into(), layout))
+            }
+        }
+    }
+    ...
+}
+//may_dangle指明T中在释放的时候有可能会出现悬垂指针，但保证不会对悬垂指针做访问，编译器可以放宽strictly alive的规则，
+//PhantomData&lt;T&gt;会针对T类型取消掉may_dangle的作用
+unsafe impl&lt;#[may_dangle] T, A: Allocator&gt; Drop for RawVec&lt;T, A&gt; {
+    /// .
+    fn drop(&amp;mut self) {
+        if let Some((ptr, layout)) = self.current_memory() {
+            //释放内存
+            unsafe { self.alloc.deallocate(ptr, layout) }
+        }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>RawVec转换为Box&lt;[T],A&gt;:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T, A: Allocator&gt; RawVec&lt;T, A&gt; {
+    //将内存块中0到len-1之间的内存块，转换为Box&lt;[MaybeUninit&lt;T&gt;]&gt;类型，len应该小于self.capacity,
+    //由调用者保证
+    pub unsafe fn into_box(self, len: usize) -&gt; Box&lt;[MaybeUninit&lt;T&gt;], A&gt; {
+        debug_assert!(
+            len &lt;= self.capacity(),
+            &quot;`len` must be smaller than or equal to `self.capacity()`&quot;
+        );
+        
+        //RUST不再对self做drop调用
+        let me = ManuallyDrop::new(self);
+        unsafe {
+            //me作为解引用，获取ptr, 然后直接将裸指针强制转换为MaybeUninit&lt;T&gt;，
+            //生成slice的可变引用
+            let slice = slice::from_raw_parts_mut(me.ptr() as *mut MaybeUninit&lt;T&gt;, len);
+            //用Box::from_raw_in生成Box&lt;[MaybeUninit&lt;T&gt;]&gt;, 注意这里需要对me.alloc做个拷贝
+            //因为me已经被forget，所以不能再用原先的alloc.
+            Box::from_raw_in(slice, ptr::read(&amp;me.alloc))
+        }
+    }
+<span class="boring">}</span></code></pre></pre>
+<p>RawVec<T>内部成员获取方法：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>    pub fn ptr(&amp;self) -&gt; *mut T {
+        self.ptr.as_ptr()
+    }
+
+    pub fn capacity(&amp;self) -&gt; usize {
+        if mem::size_of::&lt;T&gt;() == 0 { usize::MAX } else { self.cap }
+    }
+
+    pub fn allocator(&amp;self) -&gt; &amp;A {
+        &amp;self.alloc
+    }
+<span class="boring">}</span></code></pre></pre>
+<p>RawVec内存空间预留，扩充，收缩相关方法：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span>
+<span class="boring">fn main() {
+</span>    //保留空间，确保申请的内存大小满足输入参数的规定，否则的话，扩充内存
+    pub fn reserve(&amp;mut self, len: usize, additional: usize) {
+        #[cold]
+        fn do_reserve_and_handle&lt;T, A: Allocator&gt;(
+            slf: &amp;mut RawVec&lt;T, A&gt;,
+            len: usize,
+            additional: usize,
+        ) {
+            handle_reserve(slf.grow_amortized(len, additional));
+        }
+
+        if self.needs_to_grow(len, additional) {
+            do_reserve_and_handle(self, len, additional);
+        }
+    }
+
+    /// The same as `reserve`, but returns on errors instead of panicking or aborting.
+    pub fn try_reserve(&amp;mut self, len: usize, additional: usize) -&gt; Result&lt;(), TryReserveError&gt; {
+        if self.needs_to_grow(len, additional) {
+            self.grow_amortized(len, additional)
+        } else {
+            Ok(())
+        }
+    }
+
+    pub fn reserve_exact(&amp;mut self, len: usize, additional: usize) {
+        handle_reserve(self.try_reserve_exact(len, additional));
+    }
+
+    pub fn try_reserve_exact(
+        &amp;mut self,
+        len: usize,
+        additional: usize,
+    ) -&gt; Result&lt;(), TryReserveError&gt; {
+        if self.needs_to_grow(len, additional) { self.grow_exact(len, additional) } else { Ok(()) }
+    }
+
+    //收缩空间置给定大小
+    pub fn shrink_to_fit(&amp;mut self, amount: usize) {
+        handle_reserve(self.shrink(amount));
+    }
+}
+
+impl&lt;T, A: Allocator&gt; RawVec&lt;T, A&gt; {
+    //判断内存块空间是否足够
+    fn needs_to_grow(&amp;self, len: usize, additional: usize) -&gt; bool {
+        //wrapping_sub防止溢出
+        additional &gt; self.capacity().wrapping_sub(len)
+    }
+    
+    //从字节数得出内存块数目
+    fn capacity_from_bytes(excess: usize) -&gt; usize {
+        debug_assert_ne!(mem::size_of::&lt;T&gt;(), 0);
+        excess / mem::size_of::&lt;T&gt;()
+    }
+    
+    //根据NonNull来设置结构体ptr及容量
+    fn set_ptr(&amp;mut self, ptr: NonNull&lt;[u8]&gt;) {
+        //ptr.cast会转换NonNull&lt;[u8]&gt;到NonNull&lt;T&gt;
+        self.ptr = unsafe { Unique::new_unchecked(ptr.cast().as_ptr()) };
+        //由字节数获得内存块数目
+        self.cap = Self::capacity_from_bytes(ptr.len());
+    }
+
+    // 增长到满足len+additional的空间，
+    fn grow_amortized(&amp;mut self, len: usize, additional: usize) -&gt; Result&lt;(), TryReserveError&gt; {
+        // This is ensured by the calling contexts.
+        debug_assert!(additional &gt; 0);
+
+        if mem::size_of::&lt;T&gt;() == 0 {
+            return Err(CapacityOverflow.into());
+        }
+
+        // 计算需要的容量值，不能超过usize::MAX.
+        let required_cap = len.checked_add(additional).ok_or(CapacityOverflow)?;
+
+        // 每次以2的指数递增，且不能小于最小内存容量
+        //  `cap &lt;= isize::MAX` and the type of `cap` is `usize`.
+        let cap = cmp::max(self.cap * 2, required_cap);
+        let cap = cmp::max(Self::MIN_NON_ZERO_CAP, cap);
+
+        //重新计算内存大小
+        let new_layout = Layout::array::&lt;T&gt;(cap);
+
+        // 见后文.
+        let ptr = finish_grow(new_layout, self.current_memory(), &amp;mut self.alloc)?;
+        //更新ptr及cap
+        self.set_ptr(ptr);
+        Ok(())
+    }
+
+    // 与`grow_amortized`基本一致。只是要正好是len+additional的大小
+    fn grow_exact(&amp;mut self, len: usize, additional: usize) -&gt; Result&lt;(), TryReserveError&gt; {
+        if mem::size_of::&lt;T&gt;() == 0 {
+            // Since we return a capacity of `usize::MAX` when the type size is
+            // 0, getting to here necessarily means the `RawVec` is overfull.
+            return Err(CapacityOverflow.into());
+        }
+
+        let cap = len.checked_add(additional).ok_or(CapacityOverflow)?;
+        let new_layout = Layout::array::&lt;T&gt;(cap);
+
+        // `finish_grow` is non-generic over `T`.
+        let ptr = finish_grow(new_layout, self.current_memory(), &amp;mut self.alloc)?;
+        self.set_ptr(ptr);
+        Ok(())
+    }
+    
+    //收缩内存到amount长度
+    fn shrink(&amp;mut self, amount: usize) -&gt; Result&lt;(), TryReserveError&gt; {
+        assert!(amount &lt;= self.capacity(), &quot;Tried to shrink to a larger capacity&quot;);
+
+        let (ptr, layout) = if let Some(mem) = self.current_memory() { mem } else { return Ok(()) };
+        let new_size = amount * mem::size_of::&lt;T&gt;();
+
+        let ptr = unsafe {
+            let new_layout = Layout::from_size_align_unchecked(new_size, layout.align());
+            //利用Allcator的函数完成内存申请，拷贝原有内容，并释放原内存
+            self.alloc
+                .shrink(ptr, layout, new_layout)
+                .map_err(|_| AllocError { layout: new_layout, non_exhaustive: () })?
+        };
+        //更换指针和容量，这里虽然更换了self的内容，但没有改变编译器对self的所有权的认识
+        self.set_ptr(ptr);
+        Ok(())
+    }
+}
+//内存增长具体实现
+fn finish_grow&lt;A&gt;(
+    new_layout: Result&lt;Layout, LayoutError&gt;,
+    current_memory: Option&lt;(NonNull&lt;u8&gt;, Layout)&gt;,
+    alloc: &amp;mut A,
+) -&gt; Result&lt;NonNull&lt;[u8]&gt;, TryReserveError&gt;
+where
+    A: Allocator,
+{
+    // 检查new_layout是否为错误
+    let new_layout = new_layout.map_err(|_| CapacityOverflow)?;
+    //确保新的Layout的大小不引发异常
+    alloc_guard(new_layout.size())?;
+
+    let memory = if let Some((ptr, old_layout)) = current_memory {
+        //原先已经申请过内存
+        debug_assert_eq!(old_layout.align(), new_layout.align());
+        unsafe
+            // The allocator checks for alignment equality
+            intrinsics::assume(old_layout.align() == new_layout.align());
+            //调用Allocator的grow函数增长内存
+            alloc.grow(ptr, old_layout, new_layout)
+        }
+    } else {
+        //原先未申请过内存
+        alloc.allocate(new_layout)
+    };
+
+    memory.map_err(|_| AllocError { layout: new_layout, non_exhaustive: () }.into())
+}
+
+fn handle_reserve(result: Result&lt;(), TryReserveError&gt;) {
+    match result.map_err(|e| e.kind()) {
+        Err(CapacityOverflow) =&gt; capacity_overflow(),
+        Err(AllocError { layout, .. }) =&gt; handle_alloc_error(layout),
+        Ok(()) =&gt; { /* yay */ }
+    }
+}
+
+fn alloc_guard(alloc_size: usize) -&gt; Result&lt;(), TryReserveError&gt; {
+    if usize::BITS &lt; 64 &amp;&amp; alloc_size &gt; isize::MAX as usize {
+        Err(CapacityOverflow.into())
+    } else {
+        Ok(())
+    }
+}
+
+fn capacity_overflow() -&gt; ! {
+    panic!(&quot;capacity overflow&quot;);
+}
+<span class="boring">}</span></code></pre></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="07-内部可变性类型.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a rel="next" href="09-智能指针类型(二).html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="07-内部可变性类型.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next" href="09-智能指针类型(二).html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+        <script>
+            window.playground_copyable = true;
+        </script>
+        <script src="elasticlunr.min.js" charset="utf-8"></script>
+        <script src="mark.min.js" charset="utf-8"></script>
+        <script src="searcher.js" charset="utf-8"></script>
+        <script src="clipboard.min.js" charset="utf-8"></script>
+        <script src="highlight.js" charset="utf-8"></script>
+        <script src="book.js" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+    </body>
+</html>

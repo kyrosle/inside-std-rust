@@ -1,0 +1,1453 @@
+<!DOCTYPE HTML>
+<html lang="zh-cn" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>std库(八)RUST文件系统 - rust-inside-std-book</title>
+        <!-- Custom HTML head -->
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="index.html">README</a></li><li class="chapter-item expanded affix "><a href="引言.html">引言</a></li><li class="chapter-item expanded affix "><a href="01-RUST库体系概述.html">RUST库体系概述</a></li><li class="chapter-item expanded affix "><a href="02-内存.html">内存</a></li><li class="chapter-item expanded affix "><a href="03-固有函数库及基础类型.html">固有函数库及基础类型</a></li><li class="chapter-item expanded affix "><a href="04-基础Trait.html">基础Trait</a></li><li class="chapter-item expanded affix "><a href="05-Iterator.html">Iterator</a></li><li class="chapter-item expanded affix "><a href="06-基本类型续.html">基本类型续</a></li><li class="chapter-item expanded affix "><a href="07-内部可变性类型.html">内部可变性类型</a></li><li class="chapter-item expanded affix "><a href="08-智能指针类型(一).html">智能指针类型(一)</a></li><li class="chapter-item expanded affix "><a href="09-智能指针类型(二).html">智能指针类型(二)</a></li><li class="chapter-item expanded affix "><a href="10-智能指针类型(三).html">智能指针类型(三)</a></li><li class="chapter-item expanded affix "><a href="11-智能指针类型(四).html">智能指针类型(四)</a></li><li class="chapter-item expanded affix "><a href="12-std库(一)FFI及内存管理.html">std库(一)FFI及内存管理</a></li><li class="chapter-item expanded affix "><a href="13-std库(二)文件描述符及进程管理.html">std库(二)文件描述符及进程管理</a></li><li class="chapter-item expanded affix "><a href="14-std库(三)线程间锁通信.html">std库(三)线程间锁通信</a></li><li class="chapter-item expanded affix "><a href="15-std库(四)线程临界区类型.html">std库(四)线程临界区类型</a></li><li class="chapter-item expanded affix "><a href="16-std库(五)线程管理.html">std库(五)线程管理</a></li><li class="chapter-item expanded affix "><a href="17-std库(六)mpsc通信.html">std库(六)mpsc通信</a></li><li class="chapter-item expanded affix "><a href="18-std库(七)RUST的RUNTIME.html">std库(七)RUST的RUNTIME</a></li><li class="chapter-item expanded affix "><a href="19-std库(八)RUST文件系统.html" class="active">std库(八)RUST文件系统</a></li><li class="chapter-item expanded affix "><a href="20-std库(九)RUST的IO.html">std库(九)RUST的IO</a></li><li class="chapter-item expanded affix "><a href="21-RUST的异步编程.html">RUST的异步编程</a></li><li class="chapter-item expanded affix "><a href="后记.html">后记</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">rust-inside-std-book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="标准库文件系统模块分析"><a class="header" href="#标准库文件系统模块分析">标准库文件系统模块分析</a></h1>
+<p>文件模块将集中在操作系统中除文件读写之外的操作：包括创建，删除，属性查看及修改，目录操作等
+文件读写的部分将统一放在后继的IO部分去分析</p>
+<h2 id="linux的操作系统的文件系统实现"><a class="header" href="#linux的操作系统的文件系统实现">linux的操作系统的文件系统实现</a></h2>
+<p>以下是rust在linux适配层提供的文件操作API, 基本上与C语言的标准库实现了一一对应：</p>
+<p>目录相关的类型结构及方法，函数</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//创建目录类型，准备读
+pub fn readdir(p: &amp;Path) -&gt; io::Result&lt;ReadDir&gt; {
+    let root = p.to_path_buf();
+    let p = cstr(p)?;
+    unsafe {
+        //调用libc函数获得libc::DIR的指针
+        let ptr = libc::opendir(p.as_ptr());
+        if ptr.is_null() {
+            Err(Error::last_os_error())
+        } else {
+            //对C函数的返回值完成RUST的初步封装
+            let inner = InnerReadDir { dirp: Dir(ptr), root };
+            //创建多线程安全的RUST目录读类型结构ReadDir
+            Ok(ReadDir {
+                inner: Arc::new(inner),
+            })
+        }
+    }
+}
+
+//类似OwnedFd, 拥有了C语言返回的目录的所有权
+struct Dir(*mut libc::DIR);
+//将目录类型与路径字符串相联系
+struct InnerReadDir {
+    //C函数返回的目录句柄
+    dirp: Dir,
+    //目录路径字符串
+    root: PathBuf,
+}
+
+//对目录结构的多线程封装结构,用于读目录
+pub struct ReadDir {
+    inner: Arc&lt;InnerReadDir&gt;,
+}
+
+//目录下的每个条目的类型结构
+pub struct DirEntry {
+    dir: Arc&lt;InnerReadDir&gt;,
+    entry: dirent64_min,
+    // We need to store an owned copy of the entry name on platforms that use
+    // readdir() (not readdir_r()), because a) struct dirent may use a flexible
+    // array to store the name, b) it lives only until the next readdir() call.
+    name: CString,
+}
+
+// 针对linux的dirent的部分的存储
+struct dirent64_min {
+    d_ino: u64,
+    d_type: u8,
+}
+
+//针对目录读实现Iterator以简化操作
+impl Iterator for ReadDir {
+    type Item = io::Result&lt;DirEntry&gt;;
+
+    //将复杂的C语言操作用next自然的呈现
+    fn next(&amp;mut self) -&gt; Option&lt;io::Result&lt;DirEntry&gt;&gt; {
+        unsafe {
+            loop {
+                //linux已经保证了readdir的线程安全性
+                //readdir64会读取下一个
+                super::os::set_errno(0);
+                let entry_ptr = readdir64(self.inner.dirp.0);
+                if entry_ptr.is_null() {
+                    //系统调用出错处理
+                    return match super::os::errno() {
+                        0 =&gt; None,
+                        e =&gt; Some(Err(Error::from_raw_os_error(e))),
+                    };
+                }
+
+                // 以下从C调用返回的结构创建DirEntry结构.
+                // 具体细节请参考相关的C语言dirent64的手册
+                // 因为不能直接对entry_ptr做解引用，所以用一个
+                // 局部变量将需要的内容拷贝出来
+                let mut copy: dirent64 = mem::zeroed();
+                
+                let copy_bytes = &amp;mut copy as *mut _ as *mut u8;
+                let copy_name = &amp;mut copy.d_name as *mut _ as *mut u8;
+                let name_offset = copy_name.offset_from(copy_bytes) as usize;
+                let entry_bytes = entry_ptr as *const u8;
+                let entry_name = entry_bytes.add(name_offset);
+                ptr::copy_nonoverlapping(entry_bytes, copy_bytes, name_offset);
+
+                //获取需要的值
+                let entry = dirent64_min {
+                    d_ino: copy.d_ino as u64,
+                    d_type: copy.d_type as u8,
+                };
+
+                let ret = DirEntry {
+                    entry,
+                    name: CStr::from_ptr(entry_name as *const _).to_owned(),
+                    dir: Arc::clone(&amp;self.inner),
+                };
+                //去掉目录中的 ./及../
+                if ret.name_bytes() != b&quot;.&quot; &amp;&amp; ret.name_bytes() != b&quot;..&quot; {
+                    return Some(Ok(ret));
+                }
+            }
+        }
+    }
+
+}
+
+//实现对目录的关闭，进行资源释放
+impl Drop for Dir {
+    fn drop(&amp;mut self) {
+        let r = unsafe { libc::closedir(self.0) };
+        debug_assert_eq!(r, 0);
+    }
+}
+
+//针对目录下每个条目的操作
+impl DirEntry {
+    //用目录名及entry的名字连接形成新的path字符串
+    pub fn path(&amp;self) -&gt; PathBuf {
+        self.dir.root.join(self.file_name_os_str())
+    }
+
+    //获取Entry的名称字符串
+    pub fn file_name(&amp;self) -&gt; OsString {
+        self.file_name_os_str().to_os_string()
+    }
+
+    //利用文件属性操作获取Entry的属性数据
+    pub fn metadata(&amp;self) -&gt; io::Result&lt;FileAttr&gt; {
+        let fd = cvt(unsafe { dirfd(self.dir.dirp.0) })?;
+        let name = self.name_cstr().as_ptr();
+
+            //见try_statx解析
+            if let Some(ret) = unsafe { try_statx(
+                fd,
+                name,
+                libc::AT_SYMLINK_NOFOLLOW | libc::AT_STATX_SYNC_AS_STAT,
+                libc::STATX_ALL,
+            ) } {
+                return ret;
+            }
+
+        let mut stat: stat64 = unsafe { mem::zeroed() };
+        cvt(unsafe { fstatat64(fd, name, &amp;mut stat, libc::AT_SYMLINK_NOFOLLOW) })?;
+        Ok(FileAttr::from_stat64(stat))
+    }
+
+    //entry的文件类型
+    pub fn file_type(&amp;self) -&gt; io::Result&lt;FileType&gt; {
+        match self.entry.d_type {
+            //以下是设备文件
+            libc::DT_CHR =&gt; Ok(FileType { mode: libc::S_IFCHR }),
+            libc::DT_FIFO =&gt; Ok(FileType { mode: libc::S_IFIFO }),
+            libc::DT_LNK =&gt; Ok(FileType { mode: libc::S_IFLNK }),
+            libc::DT_REG =&gt; Ok(FileType { mode: libc::S_IFREG }),
+            libc::DT_SOCK =&gt; Ok(FileType { mode: libc::S_IFSOCK }),
+            libc::DT_DIR =&gt; Ok(FileType { mode: libc::S_IFDIR }),
+            libc::DT_BLK =&gt; Ok(FileType { mode: libc::S_IFBLK }),
+            //DirEntry的文件类型
+            _ =&gt; self.metadata().map(|m| m.file_type()),
+        }
+    }
+
+    //以下为entry结构内部成员获取
+
+    pub fn ino(&amp;self) -&gt; u64 {
+        self.entry.d_ino as u64
+    }
+
+    fn name_bytes(&amp;self) -&gt; &amp;[u8] {
+        self.name_cstr().to_bytes()
+    }
+
+    fn name_cstr(&amp;self) -&gt; &amp;CStr {
+        &amp;self.name
+    }
+
+    pub fn file_name_os_str(&amp;self) -&gt; &amp;OsStr {
+        OsStr::from_bytes(self.name_bytes())
+    }
+}
+//没有实现对DirEntry的Drop trait
+
+//删除目录下所有项目的实现
+pub use remove_dir_impl::remove_dir_all;
+
+mod remove_dir_impl {
+    use super::{cstr, lstat, Dir, DirEntry, InnerReadDir, ReadDir};
+    use crate::ffi::CStr;
+    use crate::io;
+    use crate::os::unix::io::{AsRawFd, FromRawFd, IntoRawFd};
+    use crate::os::unix::prelude::{OwnedFd, RawFd};
+    use crate::path::{Path, PathBuf};
+    use crate::sync::Arc;
+    use crate::sys::{cvt, cvt_r};
+
+    use libc::{fdopendir, openat, unlinkat};
+
+    //将目录按照文件打开
+    pub fn openat_nofollow_dironly(parent_fd: Option&lt;RawFd&gt;, p: &amp;CStr) -&gt; io::Result&lt;OwnedFd&gt; {
+        let fd = cvt_r(|| unsafe {
+            openat(
+                parent_fd.unwrap_or(libc::AT_FDCWD),
+                p.as_ptr(),
+                libc::O_CLOEXEC | libc::O_RDONLY | libc::O_NOFOLLOW | libc::O_DIRECTORY,
+            )
+        })?;
+        //返回一个文件描述符
+        Ok(unsafe { OwnedFd::from_raw_fd(fd) })
+    }
+
+    //用已有的目录的文件描述符打开目录
+    fn fdreaddir(dir_fd: OwnedFd) -&gt; io::Result&lt;(ReadDir, RawFd)&gt; {
+        //映射到C语言调用
+        let ptr = unsafe { fdopendir(dir_fd.as_raw_fd()) };
+        if ptr.is_null() {
+            return Err(io::Error::last_os_error());
+        }
+
+        //以下形成RUST的目录类型结构
+
+        let dirp = Dir(ptr);
+        // 这里容易出错，因为Dir会关闭fd，所以此次OwnedFd不应再存在
+        // 否则其生命周期终结会导致也调用fd的关闭操作。
+        // 这里是RUST底层编程因为其所有权额外增加程序负担的情况 
+        let new_parent_fd = dir_fd.into_raw_fd();
+        // 无法获取完整路径，此函数不能用于需要获取完整路径的操作
+        let dummy_root = PathBuf::new();
+        Ok((
+            ReadDir {
+                inner: Arc::new(InnerReadDir { dirp, root: dummy_root }),
+            },
+            new_parent_fd,
+        ))
+    }
+
+    //判断目录下的条目是否为目录
+    fn is_dir(ent: &amp;DirEntry) -&gt; Option&lt;bool&gt; {
+        match ent.entry.d_type {
+            libc::DT_UNKNOWN =&gt; None,
+            libc::DT_DIR =&gt; Some(true),
+            _ =&gt; Some(false),
+        }
+    }
+
+    //递归的删除目录下所有条目
+    fn remove_dir_all_recursive(parent_fd: Option&lt;RawFd&gt;, path: &amp;CStr) -&gt; io::Result&lt;()&gt; {
+        // 用文件描述符打开目录
+        let fd = match openat_nofollow_dironly(parent_fd, &amp;path) {
+            Err(err) if err.raw_os_error() == Some(libc::ENOTDIR) =&gt; {
+                return match parent_fd {
+                    // 删除文件 unlink...
+                    Some(parent_fd) =&gt; {
+                        cvt(unsafe { unlinkat(parent_fd, path.as_ptr(), 0) }).map(drop)
+                    }
+                    // ...unless this was supposed to be the deletion root directory
+                    None =&gt; Err(err),
+                };
+            }
+            result =&gt; result?,
+        };
+
+        // 打开目录 
+        let (dir, fd) = fdreaddir(fd)?;
+        // 用Iterator遍历
+        for child in dir {
+            let child = child?;
+            let child_name = child.name_cstr();
+            //判断child是否为目录
+            match is_dir(&amp;child) {
+                Some(true) =&gt; {
+                    //递归调用
+                    remove_dir_all_recursive(Some(fd), child_name)?;
+                }
+                Some(false) =&gt; {
+                    //删除文件
+                    cvt(unsafe { unlinkat(fd, child_name.as_ptr(), 0) })?;
+                }
+                None =&gt; {
+                    //有些操作系统需要
+                    remove_dir_all_recursive(Some(fd), child_name)?;
+                }
+            }
+        }
+
+        cvt(unsafe {
+            //删除本身
+            unlinkat(parent_fd.unwrap_or(libc::AT_FDCWD), path.as_ptr(), libc::AT_REMOVEDIR)
+        })?;
+        Ok(())
+    }
+
+    fn remove_dir_all_modern(p: &amp;Path) -&gt; io::Result&lt;()&gt; {
+        let attr = lstat(p)?;
+        //判断是否是link
+        if attr.file_type().is_symlink() {
+            crate::fs::remove_file(p)
+        } else {
+            //能够满足文件及目录需求
+            remove_dir_all_recursive(None, &amp;cstr(p)?)
+        }
+    }
+
+    pub fn remove_dir_all(p: &amp;Path) -&gt; io::Result&lt;()&gt; {
+        remove_dir_all_modern(p)
+    }
+}
+
+<span class="boring">}</span></code></pre></pre>
+<p>操作系统的每一个资源都是文件，这些资源即满足文件的统一操作，又具备自己的独特性。目录是一个典型的例子。</p>
+<p>文件相关的类型结构及方法，函数：
+创建一个文件的函数代码如下：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//以创建的方式打开一个文件并设置权限
+fn open_to_and_set_permissions(
+    to: &amp;Path,
+    reader_metadata: crate::fs::Metadata,
+) -&gt; io::Result&lt;(crate::fs::File, crate::fs::Metadata)&gt; {
+    use crate::fs::OpenOptions;
+    use crate::os::unix::fs::{OpenOptionsExt, PermissionsExt};
+
+    let perm = reader_metadata.permissions();
+    //利用OpenOptions打开一个文件
+    let writer = OpenOptions::new()
+        //见OpenOptions说明 
+        .mode(perm.mode())
+        //可写
+        .write(true)
+        //没有则创建
+        .create(true)
+        .truncate(true)
+        .open(to)?;
+    let writer_metadata = writer.metadata()?;
+    if writer_metadata.is_file() {
+        // 设置文件权限 
+        writer.set_permissions(perm)?;
+    }
+    Ok((writer, writer_metadata))
+}
+
+//打开文件
+fn open_from(from: &amp;Path) -&gt; io::Result&lt;(crate::fs::File, crate::fs::Metadata)&gt; {
+    use crate::fs::File;
+    use crate::sys_common::fs::NOT_FILE_ERROR;
+
+    //此File::open是RUST标准库对外接口，与下面的File不是一个
+    //实质是OpenOptions::new().read(true).open(from.as_ref());
+    let reader = File::open(from)?;
+    //获取文件属性
+    let metadata = reader.metadata()?;
+    //判断是否是文件
+    if !metadata.is_file() {
+        //不是，返回错误
+        return Err(NOT_FILE_ERROR);
+    }
+    Ok((reader, metadata))
+}
+<span class="boring">}</span></code></pre></pre>
+<p>以上实际上是文件类型结构及方法的应用起始点，相关的类型结构及方法如下：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//此类型结构主要用于设置文件open的选择项
+//此类型结构对libc的open的属性参数做了总结，
+//更友好的生成open的属性参数。否则，每次调用open都需要重新看man手册
+//此类型结构可以处理一些文件打开时的矛盾选项，提升安全
+pub struct OpenOptions {
+    // 可读
+    read: bool,
+    //可写
+    write: bool,
+    //添加到尾部
+    append: bool,
+    //删除文件内容
+    truncate: bool,
+    //创建文件
+    create: bool,
+    //创建一个新的文件
+    create_new: bool,
+    //具体操作系统相关 
+    custom_flags: i32,
+    //
+    mode: mode_t,
+}
+impl OpenOptions {
+    pub fn new() -&gt; OpenOptions {
+        //默认的属性
+        OpenOptions {
+            // generic
+            read: false,
+            write: false,
+            append: false,
+            truncate: false,
+            create: false,
+            create_new: false,
+            // system-specific
+            custom_flags: 0,
+            //linux的文件权限
+            mode: 0o666,
+        }
+    }
+
+    //以下设置文件打开属性
+
+    pub fn read(&amp;mut self, read: bool) {
+        self.read = read;
+    }
+    pub fn write(&amp;mut self, write: bool) {
+        self.write = write;
+    }
+    pub fn append(&amp;mut self, append: bool) {
+        self.append = append;
+    }
+    pub fn truncate(&amp;mut self, truncate: bool) {
+        self.truncate = truncate;
+    }
+    pub fn create(&amp;mut self, create: bool) {
+        self.create = create;
+    }
+    pub fn create_new(&amp;mut self, create_new: bool) {
+        self.create_new = create_new;
+    }
+
+    pub fn custom_flags(&amp;mut self, flags: i32) {
+        self.custom_flags = flags;
+    }
+    pub fn mode(&amp;mut self, mode: u32) {
+        self.mode = mode as mode_t;
+    }
+
+    //文件属性转化为libc的open函数中的文件模式参数读写位
+    //可以看到，此函数将以前的经验做了总结。
+    fn get_access_mode(&amp;self) -&gt; io::Result&lt;c_int&gt; {
+        match (self.read, self.write, self.append) {
+            (true, false, false) =&gt; Ok(libc::O_RDONLY),
+            (false, true, false) =&gt; Ok(libc::O_WRONLY),
+            (true, true, false) =&gt; Ok(libc::O_RDWR),
+            (false, _, true) =&gt; Ok(libc::O_WRONLY | libc::O_APPEND),
+            (true, _, true) =&gt; Ok(libc::O_RDWR | libc::O_APPEND),
+            (false, false, false) =&gt; Err(Error::from_raw_os_error(libc::EINVAL)),
+        }
+    }
+
+    //文件属性转化为libc的open函数中的文件模式参数创建位
+    fn get_creation_mode(&amp;self) -&gt; io::Result&lt;c_int&gt; {
+        //矛盾判断
+        match (self.write, self.append) {
+            (true, false) =&gt; {}
+            //不允许写即不允许创建文件
+            (false, false) =&gt; {
+                if self.truncate || self.create || self.create_new {
+                    return Err(Error::from_raw_os_error(libc::EINVAL));
+                }
+            }
+            //与truncate矛盾
+            (_, true) =&gt; {
+                if self.truncate &amp;&amp; !self.create_new {
+                    return Err(Error::from_raw_os_error(libc::EINVAL));
+                }
+            }
+        }
+
+        Ok(match (self.create, self.truncate, self.create_new) {
+            (false, false, false) =&gt; 0,
+            //创建文件
+            (true, false, false) =&gt; libc::O_CREAT,
+            //原有文件内容清零
+            (false, true, false) =&gt; libc::O_TRUNC,
+            //没有文件就创建，文件存在则清零
+            (true, true, false) =&gt; libc::O_CREAT | libc::O_TRUNC,
+            //没有文件就创建，文件存在则返回失败
+            (_, _, true) =&gt; libc::O_CREAT | libc::O_EXCL,
+        })
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>OpenOption在细节上体现了RUST的程序员友好，将原本libc::open函数中的属性参数的学习负担清除掉了。 </p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 操作系统无关界面接口File类型结构
+pub struct File(FileDesc);
+
+//创建文件的方法实现
+impl File {
+    //打开文件，创建新文件也用此函数
+    pub fn open(path: &amp;Path, opts: &amp;OpenOptions) -&gt; io::Result&lt;File&gt; {
+        //linux中，需要把Path转换成C字符串
+        let path = cstr(path)?;
+        File::open_c(&amp;path, opts)
+    }
+
+    //利用libc::open打开及创建文件
+    pub fn open_c(path: &amp;CStr, opts: &amp;OpenOptions) -&gt; io::Result&lt;File&gt; {
+        //创建文件时最复杂的是flags的生成,
+        //RUST利用OpenOptions比较直观的完成了这个工作
+        let flags = libc::O_CLOEXEC
+            | opts.get_access_mode()?
+            | opts.get_creation_mode()?
+            | (opts.custom_flags as c_int &amp; !libc::O_ACCMODE);
+        //不同的操作系统还是有些区别，但不必关注这个细节了
+        let fd = cvt_r(|| unsafe { open64(path.as_ptr(), flags, opts.mode as c_int) })?;
+        //创建File变量，unsafe表明了fd的不安全的特性
+        Ok(File(unsafe { FileDesc::from_raw_fd(fd) }))
+    }
+
+    ...
+    ...
+}
+
+//路径名类型结构，必须用OsStr来实现
+//此处没有repr(transparent)，但Path的内存布局与OsStr是一致的
+pub struct Path {
+    inner: OsStr,
+}
+
+impl Path {
+    //能够转换为OsStr引用的类型都能够转换为Path的引用
+    //Path的内存布局与OsStr是一致的。
+    pub fn new&lt;S: AsRef&lt;OsStr&gt; + ?Sized&gt;(s: &amp;S) -&gt; &amp;Path {
+        unsafe { &amp;*(s.as_ref() as *const OsStr as *const Path) }
+    }
+}
+
+//Path一般用于引用，PathBuf拥有所有权
+//本质上Path与PathBuf的关系就是OsStr与OsString的关系
+pub struct PathBuf {
+    inner: OsString,
+}
+
+impl PathBuf {
+    pub fn new() -&gt; PathBuf {
+        PathBuf { inner: OsString::new() }
+    }
+    ...
+    ...
+}
+
+<span class="boring">}</span></code></pre></pre>
+<p>以上是RUST中文件类型结构典型的创建的过程。
+下面是文件拷贝函数:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//拷贝文件
+pub fn copy(from: &amp;Path, to: &amp;Path) -&gt; io::Result&lt;u64&gt; {
+    let (mut reader, reader_metadata) = open_from(from)?;
+    let max_len = u64::MAX;
+    //注意这个文件属性的传递
+    let (mut writer, _) = open_to_and_set_permissions(to, reader_metadata)?;
+
+    use super::kernel_copy::{copy_regular_files, CopyResult};
+
+    match copy_regular_files(reader.as_raw_fd(), writer.as_raw_fd(), max_len) {
+        CopyResult::Ended(bytes) =&gt; Ok(bytes),
+        CopyResult::Error(e, _) =&gt; Err(e),
+        CopyResult::Fallback(written) =&gt; match io::copy::generic_copy(&amp;mut reader, &amp;mut writer) {
+            Ok(bytes) =&gt; Ok(bytes + written),
+            Err(e) =&gt; Err(e),
+        },
+    }
+}
+
+<span class="boring">}</span></code></pre></pre>
+<p>其他RUST的文件操作，操作系统相关模块提供的对外接口, 基本都是直接调用libc的同名函数，解释略:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//删除文件及连接
+pub fn unlink(p: &amp;Path) -&gt; io::Result&lt;()&gt; {
+    let p = cstr(p)?;
+    cvt(unsafe { libc::unlink(p.as_ptr()) })?;
+    Ok(())
+}
+
+pub fn rename(old: &amp;Path, new: &amp;Path) -&gt; io::Result&lt;()&gt; {
+    let old = cstr(old)?;
+    let new = cstr(new)?;
+    cvt(unsafe { libc::rename(old.as_ptr(), new.as_ptr()) })?;
+    Ok(())
+}
+
+pub fn symlink(original: &amp;Path, link: &amp;Path) -&gt; io::Result&lt;()&gt; {
+    let original = cstr(original)?;
+    let link = cstr(link)?;
+    cvt(unsafe { libc::symlink(original.as_ptr(), link.as_ptr()) })?;
+    Ok(())
+}
+
+pub fn chown(path: &amp;Path, uid: u32, gid: u32) -&gt; io::Result&lt;()&gt; {
+    let path = cstr(path)?;
+    cvt(unsafe { libc::chown(path.as_ptr(), uid as libc::uid_t, gid as libc::gid_t) })?;
+    Ok(())
+}
+
+pub fn fchown(fd: c_int, uid: u32, gid: u32) -&gt; io::Result&lt;()&gt; {
+    cvt(unsafe { libc::fchown(fd, uid as libc::uid_t, gid as libc::gid_t) })?;
+    Ok(())
+}
+
+pub fn lchown(path: &amp;Path, uid: u32, gid: u32) -&gt; io::Result&lt;()&gt; {
+    let path = cstr(path)?;
+    cvt(unsafe { libc::lchown(path.as_ptr(), uid as libc::uid_t, gid as libc::gid_t) })?;
+    Ok(())
+}
+
+pub fn chroot(dir: &amp;Path) -&gt; io::Result&lt;()&gt; {
+    let dir = cstr(dir)?;
+    cvt(unsafe { libc::chroot(dir.as_ptr()) })?;
+    Ok(())
+}
+
+//创建一个文件链接
+pub fn link(original: &amp;Path, link: &amp;Path) -&gt; io::Result&lt;()&gt; {
+    let original = cstr(original)?;
+    let link = cstr(link)?;
+        {
+            // Where we can, use `linkat` instead of `link`; see the comment above
+            // this one for details on why.
+            cvt(unsafe { libc::linkat(libc::AT_FDCWD, original.as_ptr(), libc::AT_FDCWD, link.as_ptr(), 0) })?;
+        }
+    Ok(())
+}
+<span class="boring">}</span></code></pre></pre>
+<p>以下接口函数需要对libc的函数做些适配工作</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//设置文件权限， FilePermission见下面结构
+pub fn set_perm(p: &amp;Path, perm: FilePermissions) -&gt; io::Result&lt;()&gt; {
+    let p = cstr(p)?;
+    cvt_r(|| unsafe { libc::chmod(p.as_ptr(), perm.mode) })?;
+    Ok(())
+}
+
+//linux的文件权限
+pub struct FilePermissions {
+    mode: mode_t,
+}
+
+
+//获取文件属性, FileAttr见后面的代码分析
+pub fn stat(p: &amp;Path) -&gt; io::Result&lt;FileAttr&gt; {
+    let p = cstr(p)?;
+
+        //try_statx将后面的分析
+        if let Some(ret) = unsafe { try_statx(
+            libc::AT_FDCWD,
+            p.as_ptr(),
+            libc::AT_STATX_SYNC_AS_STAT,
+            libc::STATX_ALL,
+        ) } {
+            //如果成功，已经用statx方式获取
+            //返回
+            return ret;
+        }
+
+    //否则，用stat64方式获取属性
+    let mut stat: stat64 = unsafe { mem::zeroed() };
+    cvt(unsafe { stat64(p.as_ptr(), &amp;mut stat) })?;
+    Ok(FileAttr::from_stat64(stat))
+}
+
+
+//相关的
+pub struct FileType {
+    mode: mode_t,
+}
+
+pub struct FileAttr {
+    stat: stat64,
+    statx_extra_fields: Option&lt;StatxExtraFields&gt;,
+}
+
+impl FileAttr {
+    fn from_stat64(stat: stat64) -&gt; Self {
+        Self { stat, statx_extra_fields: None }
+    }
+
+    pub fn size(&amp;self) -&gt; u64 {
+        self.stat.st_size as u64
+    }
+    pub fn perm(&amp;self) -&gt; FilePermissions {
+        FilePermissions { mode: (self.stat.st_mode as mode_t) }
+    }
+
+    pub fn file_type(&amp;self) -&gt; FileType {
+        FileType { mode: self.stat.st_mode as mode_t }
+    }
+}
+
+impl FileAttr {
+    //修改时间
+    pub fn modified(&amp;self) -&gt; io::Result&lt;SystemTime&gt; {
+        Ok(SystemTime::from(libc::timespec {
+            tv_sec: self.stat.st_mtime as libc::time_t,
+            tv_nsec: self.stat.st_mtime_nsec as _,
+        }))
+    }
+
+    //创建时间
+    pub fn created(&amp;self) -&gt; io::Result&lt;SystemTime&gt; {
+            if let Some(ext) = &amp;self.statx_extra_fields {
+                return if (ext.stx_mask &amp; libc::STATX_BTIME) != 0 {
+                    Ok(SystemTime::from(libc::timespec {
+                        tv_sec: ext.stx_btime.tv_sec as libc::time_t,
+                        tv_nsec: ext.stx_btime.tv_nsec as _,
+                    }))
+                } else {
+                    Err(io::const_io_error!(
+                        io::ErrorKind::Uncategorized,
+                        &quot;creation time is not available for the filesystem&quot;,
+                    ))
+                };
+            }
+
+        Err(io::const_io_error!(
+            io::ErrorKind::Unsupported,
+            &quot;creation time is not available on this platform \
+                            currently&quot;,
+        ))
+    }
+}
+
+
+struct StatxExtraFields {
+    stx_mask: u32,
+    stx_btime: libc::statx_timestamp,
+}
+
+//linux上，statx包含了最全面的信息
+unsafe fn try_statx(
+    fd: c_int,
+    path: *const c_char,
+    flags: i32,
+    mask: u32,
+) -&gt; Option&lt;io::Result&lt;FileAttr&gt;&gt; {
+    use crate::sync::atomic::{AtomicU8, Ordering};
+
+    syscall! {
+        fn statx(
+            fd: c_int,
+            pathname: *const c_char,
+            flags: c_int,
+            mask: libc::c_uint,
+            statxbuf: *mut libc::statx
+        ) -&gt; c_int
+    }
+
+    let mut buf: libc::statx = mem::zeroed();
+    if let Err(err) = cvt(statx(fd, path, flags, mask, &amp;mut buf)) {
+        return Some(Err(err));
+    }
+
+    // 需要用stat64返回，以下从stat翻译到stat64.
+    let mut stat: stat64 = mem::zeroed();
+    // `c_ulong` on gnu-mips, `dev_t` otherwise
+    stat.st_dev = libc::makedev(buf.stx_dev_major, buf.stx_dev_minor) as _;
+    stat.st_ino = buf.stx_ino as libc::ino64_t;
+    stat.st_nlink = buf.stx_nlink as libc::nlink_t;
+    stat.st_mode = buf.stx_mode as libc::mode_t;
+    stat.st_uid = buf.stx_uid as libc::uid_t;
+    stat.st_gid = buf.stx_gid as libc::gid_t;
+    stat.st_rdev = libc::makedev(buf.stx_rdev_major, buf.stx_rdev_minor) as _;
+    stat.st_size = buf.stx_size as off64_t;
+    stat.st_blksize = buf.stx_blksize as libc::blksize_t;
+    stat.st_blocks = buf.stx_blocks as libc::blkcnt64_t;
+    stat.st_atime = buf.stx_atime.tv_sec as libc::time_t;
+    // `i64` on gnu-x86_64-x32, `c_ulong` otherwise.
+    stat.st_atime_nsec = buf.stx_atime.tv_nsec as _;
+    stat.st_mtime = buf.stx_mtime.tv_sec as libc::time_t;
+    stat.st_mtime_nsec = buf.stx_mtime.tv_nsec as _;
+    stat.st_ctime = buf.stx_ctime.tv_sec as libc::time_t;
+    stat.st_ctime_nsec = buf.stx_ctime.tv_nsec as _;
+
+    let extra = StatxExtraFields {
+        stx_mask: buf.stx_mask,
+        stx_btime: buf.stx_btime,
+    };
+
+    Some(Ok(FileAttr { stat, statx_extra_fields: Some(extra) }))
+}
+
+
+//link的属性获取,与stat类似
+pub fn lstat(p: &amp;Path) -&gt; io::Result&lt;FileAttr&gt; {
+    let p = cstr(p)?;
+
+        if let Some(ret) = unsafe { try_statx(
+            libc::AT_FDCWD,
+            p.as_ptr(),
+            libc::AT_SYMLINK_NOFOLLOW | libc::AT_STATX_SYNC_AS_STAT,
+            libc::STATX_ALL,
+        ) } {
+            return ret;
+        }
+
+    let mut stat: stat64 = unsafe { mem::zeroed() };
+    cvt(unsafe { lstat64(p.as_ptr(), &amp;mut stat) })?;
+    Ok(FileAttr::from_stat64(stat))
+}
+
+
+//相关的类型结构的方法实现
+impl FilePermissions {
+    pub fn readonly(&amp;self) -&gt; bool {
+        // check if any class (owner, group, others) has write permission
+        self.mode &amp; 0o222 == 0
+    }
+
+    pub fn set_readonly(&amp;mut self, readonly: bool) {
+        if readonly {
+            // remove write permission for all classes; equivalent to `chmod a-w &lt;file&gt;`
+            self.mode &amp;= !0o222;
+        } else {
+            // add write permission for all classes; equivalent to `chmod a+w &lt;file&gt;`
+            self.mode |= 0o222;
+        }
+    }
+    pub fn mode(&amp;self) -&gt; u32 {
+        self.mode as u32
+    }
+}
+
+impl FileType {
+    pub fn is_dir(&amp;self) -&gt; bool {
+        self.is(libc::S_IFDIR)
+    }
+    pub fn is_file(&amp;self) -&gt; bool {
+        self.is(libc::S_IFREG)
+    }
+    pub fn is_symlink(&amp;self) -&gt; bool {
+        self.is(libc::S_IFLNK)
+    }
+
+    pub fn is(&amp;self, mode: mode_t) -&gt; bool {
+        self.mode &amp; libc::S_IFMT == mode
+    }
+}
+
+<span class="boring">}</span></code></pre></pre>
+<p>以下两个函数涉及到了从外部C函数传入的字符串与RUST字符串的转换，值得仔细学习。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//读取链接的path
+pub fn readlink(p: &amp;Path) -&gt; io::Result&lt;PathBuf&gt; {
+    let c_path = cstr(p)?;
+    let p = c_path.as_ptr();
+
+    //因为需要用C语言的字符串存放读回的内容，
+    //所以用Vec来申请内存
+    let mut buf = Vec::with_capacity(256);
+
+    loop {
+        //读到buf里，限制了读的长度
+        let buf_read =
+            cvt(unsafe { libc::readlink(p, buf.as_mut_ptr() as *mut _, buf.capacity()) })? as usize;
+
+        //读成功, 设置Vec，使得Vec正确反映读的内容
+        //此处是RUST与C交互的额外的设置内容，很易出错
+        unsafe {
+            //直接用set_len完成Vec的len初始化
+            buf.set_len(buf_read);
+        }
+
+        //将Vec转化为OsString
+        if buf_read != buf.capacity() {
+            //不能有额外的容量
+            buf.shrink_to_fit();
+
+            //创建PathBuf并返回
+            return Ok(PathBuf::from(OsString::from_vec(buf)));
+        }
+
+        // 如果正好是vec的容量，证明link的内容可能长过容量，
+        // reserve(1)后再次读
+        buf.reserve(1);
+    }
+}
+
+//返回绝对路径
+pub fn canonicalize(p: &amp;Path) -&gt; io::Result&lt;PathBuf&gt; {
+    //这里需要自行申请内存，防止不安全
+    let path = CString::new(p.as_os_str().as_bytes())?;
+    let buf;
+    unsafe {
+        //返回绝对路径
+        let r = libc::realpath(path.as_ptr(), ptr::null_mut());
+        if r.is_null() {
+            return Err(io::Error::last_os_error());
+        }
+        //将返回的C字符串用以生成Vec
+        buf = CStr::from_ptr(r).to_bytes().to_vec();
+        //负责释放
+        libc::free(r as *mut _);
+    }
+    //生成PathBuf
+    Ok(PathBuf::from(OsString::from_vec(buf)))
+}
+<span class="boring">}</span></code></pre></pre>
+<p>文件的其他属性：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl File {
+    //文件属性获取
+    pub fn file_attr(&amp;self) -&gt; io::Result&lt;FileAttr&gt; {
+        let fd = self.as_raw_fd();
+
+            if let Some(ret) = unsafe { try_statx(
+                fd,
+                b&quot;\0&quot; as *const _ as *const c_char,
+                libc::AT_EMPTY_PATH | libc::AT_STATX_SYNC_AS_STAT,
+                libc::STATX_ALL,
+            ) } {
+                return ret;
+            }
+
+        let mut stat: stat64 = unsafe { mem::zeroed() };
+        cvt(unsafe { fstat64(fd, &amp;mut stat) })?;
+        Ok(FileAttr::from_stat64(stat))
+    }
+
+    //完成文件内存与磁盘同步
+    pub fn fsync(&amp;self) -&gt; io::Result&lt;()&gt; {
+        cvt_r(|| unsafe { os_fsync(self.as_raw_fd()) })?;
+        return Ok(());
+
+        unsafe fn os_fsync(fd: c_int) -&gt; c_int {
+            libc::fsync(fd)
+        }
+    }
+
+    //仅完成文件的数据与磁盘同步，不包括文件属性
+    pub fn datasync(&amp;self) -&gt; io::Result&lt;()&gt; {
+        cvt_r(|| unsafe { os_datasync(self.as_raw_fd()) })?;
+        return Ok(());
+
+        unsafe fn os_datasync(fd: c_int) -&gt; c_int {
+            libc::fdatasync(fd)
+        }
+    }
+
+    //删除文件内容
+    pub fn truncate(&amp;self, size: u64) -&gt; io::Result&lt;()&gt; {
+        use crate::convert::TryInto;
+        let size: off64_t =
+            size.try_into().map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e))?;
+        cvt_r(|| unsafe { ftruncate64(self.as_raw_fd(), size) }).map(drop)
+    }
+
+    //复制fd，并形成新的File
+    pub fn duplicate(&amp;self) -&gt; io::Result&lt;File&gt; {
+        self.0.duplicate().map(File)
+    }
+
+    //设置文件权限
+    pub fn set_permissions(&amp;self, perm: FilePermissions) -&gt; io::Result&lt;()&gt; {
+        cvt_r(|| unsafe { libc::fchmod(self.as_raw_fd(), perm.mode) })?;
+        Ok(())
+    }
+}
+
+//用于创建目录
+pub struct DirBuilder {
+    mode: mode_t,
+}
+
+
+impl DirBuilder {
+    pub fn new() -&gt; DirBuilder {
+        DirBuilder { mode: 0o777 }
+    }
+
+    //创建一个目录
+    pub fn mkdir(&amp;self, p: &amp;Path) -&gt; io::Result&lt;()&gt; {
+        let p = cstr(p)?;
+        cvt(unsafe { libc::mkdir(p.as_ptr(), self.mode) })?;
+        Ok(())
+    }
+
+    //设置创建目录的权限
+    pub fn set_mode(&amp;mut self, mode: u32) {
+        self.mode = mode as mode_t;
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="操作系统无关文件系统模块分析"><a class="header" href="#操作系统无关文件系统模块分析">操作系统无关文件系统模块分析</a></h2>
+<p>引入linux的fs类型结构及实现</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use crate::sys::fs as fs_imp;
+<span class="boring">}</span></code></pre></pre>
+<p>RUST标准库对外接口的类型结构：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//及linux文件系统中File的封装
+pub struct File {
+    inner: fs_imp::File,
+}
+
+//文件元数据，即FileAttr的封装
+pub struct Metadata(fs_imp::FileAttr);
+
+//打开的目录类型结构，即linux的fs同名结构封装
+pub struct ReadDir(fs_imp::ReadDir);
+
+//目录中的项目类型结构，也即简单封装
+pub struct DirEntry(fs_imp::DirEntry);
+
+//创建/打开文件的执行者类型结构，也即简单封装
+pub struct OpenOptions(fs_imp::OpenOptions);
+
+//文件权限
+pub struct Permissions(fs_imp::FilePermissions);
+
+//文件类型
+pub struct FileType(fs_imp::FileType);
+
+//目录创建执行类型结构
+pub struct DirBuilder {
+    inner: fs_imp::DirBuilder,
+    //是否为多级目录
+    recursive: bool,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>相关的与文件读写无关的实现：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl File {
+    //只读文件打开, RUST的文件打开，打开模式的输入，
+    //用不同的函数表示不同的打开方式
+    pub fn open&lt;P: AsRef&lt;Path&gt;&gt;(path: P) -&gt; io::Result&lt;File&gt; {
+        //见后继的OpenOptions的分析
+        OpenOptions::new().read(true).open(path.as_ref())
+    }
+
+    //创建一个文件
+    pub fn create&lt;P: AsRef&lt;Path&gt;&gt;(path: P) -&gt; io::Result&lt;File&gt; {
+        //文件设置为可写，文件存在则删除内容，文件不在就创建
+        OpenOptions::new().write(true).create(true).truncate(true).open(path.as_ref())
+    }
+
+    //创建一个文件打开选项
+    pub fn options() -&gt; OpenOptions {
+        OpenOptions::new()
+    }
+
+    //同步文件到磁盘
+    pub fn sync_all(&amp;self) -&gt; io::Result&lt;()&gt; {
+        self.inner.fsync()
+    }
+
+    //只同步文件数据到磁盘
+    pub fn sync_data(&amp;self) -&gt; io::Result&lt;()&gt; {
+        self.inner.datasync()
+    }
+
+    //设置文件为指定大小
+    pub fn set_len(&amp;self, size: u64) -&gt; io::Result&lt;()&gt; {
+        self.inner.truncate(size)
+    }
+
+    //获取文件属性
+    pub fn metadata(&amp;self) -&gt; io::Result&lt;Metadata&gt; {
+        self.inner.file_attr().map(Metadata)
+    }
+
+    //复制文件描述符，生成新的File变量
+    pub fn try_clone(&amp;self) -&gt; io::Result&lt;File&gt; {
+        Ok(File { inner: self.inner.duplicate()? })
+    }
+
+    //设置文件权限
+    pub fn set_permissions(&amp;self, perm: Permissions) -&gt; io::Result&lt;()&gt; {
+        self.inner.set_permissions(perm.0)
+    }
+}
+
+//文件创建/打开的执行类型结构
+impl OpenOptions {
+    //对操作系统相关的同名结构的Adapter
+    pub fn new() -&gt; Self {
+        OpenOptions(fs_imp::OpenOptions::new())
+    }
+
+    pub fn read(&amp;mut self, read: bool) -&gt; &amp;mut Self {
+        self.0.read(read);
+        self
+    }
+
+    pub fn write(&amp;mut self, write: bool) -&gt; &amp;mut Self {
+        self.0.write(write);
+        self
+    }
+
+    pub fn append(&amp;mut self, append: bool) -&gt; &amp;mut Self {
+        self.0.append(append);
+        self
+    }
+
+    pub fn truncate(&amp;mut self, truncate: bool) -&gt; &amp;mut Self {
+        self.0.truncate(truncate);
+        self
+    }
+
+    pub fn create(&amp;mut self, create: bool) -&gt; &amp;mut Self {
+        self.0.create(create);
+        self
+    }
+
+    pub fn create_new(&amp;mut self, create_new: bool) -&gt; &amp;mut Self {
+        self.0.create_new(create_new);
+        self
+    }
+
+    //利用一个类型结构完成打开文件的各种选项，比用一个参数表达更清晰
+    //易掌握
+    pub fn open&lt;P: AsRef&lt;Path&gt;&gt;(&amp;self, path: P) -&gt; io::Result&lt;File&gt; {
+        self._open(path.as_ref())
+    }
+
+    fn _open(&amp;self, path: &amp;Path) -&gt; io::Result&lt;File&gt; {
+        fs_imp::File::open(path, &amp;self.0).map(|inner| File { inner })
+    }
+}
+
+// ReadDir适配设计模式
+impl Iterator for ReadDir {
+    type Item = io::Result&lt;DirEntry&gt;;
+
+    fn next(&amp;mut self) -&gt; Option&lt;io::Result&lt;DirEntry&gt;&gt; {
+        self.0.next().map(|entry| entry.map(DirEntry))
+    }
+}
+
+
+impl DirBuilder {
+    pub fn new() -&gt; DirBuilder {
+        DirBuilder { inner: fs_imp::DirBuilder::new(), recursive: false }
+    }
+
+    pub fn recursive(&amp;mut self, recursive: bool) -&gt; &amp;mut Self {
+        self.recursive = recursive;
+        self
+    }
+
+    //创建一个目录
+    pub fn create&lt;P: AsRef&lt;Path&gt;&gt;(&amp;self, path: P) -&gt; io::Result&lt;()&gt; {
+        self._create(path.as_ref())
+    }
+
+    fn _create(&amp;self, path: &amp;Path) -&gt; io::Result&lt;()&gt; {
+        //如果是多级，则进入下一级，否则创建新目录
+        if self.recursive { self.create_dir_all(path) } else { self.inner.mkdir(path) }
+    }
+
+    //创建多级目录
+    fn create_dir_all(&amp;self, path: &amp;Path) -&gt; io::Result&lt;()&gt; {
+        if path == Path::new(&quot;&quot;) {
+            return Ok(());
+        }
+
+        match self.inner.mkdir(path) {
+            Ok(()) =&gt; return Ok(()),
+            Err(ref e) if e.kind() == io::ErrorKind::NotFound =&gt; {}
+            Err(_) if path.is_dir() =&gt; return Ok(()),
+            Err(e) =&gt; return Err(e),
+        }
+        match path.parent() {
+            Some(p) =&gt; self.create_dir_all(p)?,
+            None =&gt; {
+                return Err(io::const_io_error!(
+                    io::ErrorKind::Uncategorized,
+                    &quot;failed to create whole tree&quot;,
+                ));
+            }
+        }
+        match self.inner.mkdir(path) {
+            Ok(()) =&gt; Ok(()),
+            Err(_) if path.is_dir() =&gt; Ok(()),
+            Err(e) =&gt; Err(e),
+        }
+    }
+}
+
+<span class="boring">}</span></code></pre></pre>
+<p>RUST标准库对外文件操作函数：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//删除文件
+pub fn remove_file&lt;P: AsRef&lt;Path&gt;&gt;(path: P) -&gt; io::Result&lt;()&gt; {
+    fs_imp::unlink(path.as_ref())
+}
+
+//获取文件属性
+pub fn metadata&lt;P: AsRef&lt;Path&gt;&gt;(path: P) -&gt; io::Result&lt;Metadata&gt; {
+    fs_imp::stat(path.as_ref()).map(Metadata)
+}
+
+//链接属性
+pub fn symlink_metadata&lt;P: AsRef&lt;Path&gt;&gt;(path: P) -&gt; io::Result&lt;Metadata&gt; {
+    fs_imp::lstat(path.as_ref()).map(Metadata)
+}
+
+//重命名
+pub fn rename&lt;P: AsRef&lt;Path&gt;, Q: AsRef&lt;Path&gt;&gt;(from: P, to: Q) -&gt; io::Result&lt;()&gt; {
+    fs_imp::rename(from.as_ref(), to.as_ref())
+}
+
+//创建硬链接
+pub fn hard_link&lt;P: AsRef&lt;Path&gt;, Q: AsRef&lt;Path&gt;&gt;(original: P, link: Q) -&gt; io::Result&lt;()&gt; {
+    fs_imp::link(original.as_ref(), link.as_ref())
+}
+
+//创建软链接
+pub fn soft_link&lt;P: AsRef&lt;Path&gt;, Q: AsRef&lt;Path&gt;&gt;(original: P, link: Q) -&gt; io::Result&lt;()&gt; {
+    fs_imp::symlink(original.as_ref(), link.as_ref())
+}
+
+//读取链接内容
+pub fn read_link&lt;P: AsRef&lt;Path&gt;&gt;(path: P) -&gt; io::Result&lt;PathBuf&gt; {
+    fs_imp::readlink(path.as_ref())
+}
+
+//生成绝对路径
+pub fn canonicalize&lt;P: AsRef&lt;Path&gt;&gt;(path: P) -&gt; io::Result&lt;PathBuf&gt; {
+    fs_imp::canonicalize(path.as_ref())
+}
+
+//创建一个目录
+pub fn create_dir&lt;P: AsRef&lt;Path&gt;&gt;(path: P) -&gt; io::Result&lt;()&gt; {
+    DirBuilder::new().create(path.as_ref())
+}
+
+//创建多级目录
+pub fn create_dir_all&lt;P: AsRef&lt;Path&gt;&gt;(path: P) -&gt; io::Result&lt;()&gt; {
+    DirBuilder::new().recursive(true).create(path.as_ref())
+}
+
+//删除空目录
+pub fn remove_dir&lt;P: AsRef&lt;Path&gt;&gt;(path: P) -&gt; io::Result&lt;()&gt; {
+    fs_imp::rmdir(path.as_ref())
+}
+
+//删除整个目录
+pub fn remove_dir_all&lt;P: AsRef&lt;Path&gt;&gt;(path: P) -&gt; io::Result&lt;()&gt; {
+    fs_imp::remove_dir_all(path.as_ref())
+}
+
+//打开目录，准备用Iterator的方式读
+pub fn read_dir&lt;P: AsRef&lt;Path&gt;&gt;(path: P) -&gt; io::Result&lt;ReadDir&gt; {
+    fs_imp::readdir(path.as_ref()).map(ReadDir)
+}
+
+//设置文件权限
+pub fn set_permissions&lt;P: AsRef&lt;Path&gt;&gt;(path: P, perm: Permissions) -&gt; io::Result&lt;()&gt; {
+    fs_imp::set_perm(path.as_ref(), perm.0)
+}
+<span class="boring">}</span></code></pre></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="18-std库(七)RUST的RUNTIME.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a rel="next" href="20-std库(九)RUST的IO.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="18-std库(七)RUST的RUNTIME.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next" href="20-std库(九)RUST的IO.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+        <script>
+            window.playground_copyable = true;
+        </script>
+        <script src="elasticlunr.min.js" charset="utf-8"></script>
+        <script src="mark.min.js" charset="utf-8"></script>
+        <script src="searcher.js" charset="utf-8"></script>
+        <script src="clipboard.min.js" charset="utf-8"></script>
+        <script src="highlight.js" charset="utf-8"></script>
+        <script src="book.js" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+    </body>
+</html>

@@ -1,0 +1,1194 @@
+<!DOCTYPE HTML>
+<html lang="zh-cn" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>智能指针类型(三) - rust-inside-std-book</title>
+        <!-- Custom HTML head -->
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="index.html">README</a></li><li class="chapter-item expanded affix "><a href="引言.html">引言</a></li><li class="chapter-item expanded affix "><a href="01-RUST库体系概述.html">RUST库体系概述</a></li><li class="chapter-item expanded affix "><a href="02-内存.html">内存</a></li><li class="chapter-item expanded affix "><a href="03-固有函数库及基础类型.html">固有函数库及基础类型</a></li><li class="chapter-item expanded affix "><a href="04-基础Trait.html">基础Trait</a></li><li class="chapter-item expanded affix "><a href="05-Iterator.html">Iterator</a></li><li class="chapter-item expanded affix "><a href="06-基本类型续.html">基本类型续</a></li><li class="chapter-item expanded affix "><a href="07-内部可变性类型.html">内部可变性类型</a></li><li class="chapter-item expanded affix "><a href="08-智能指针类型(一).html">智能指针类型(一)</a></li><li class="chapter-item expanded affix "><a href="09-智能指针类型(二).html">智能指针类型(二)</a></li><li class="chapter-item expanded affix "><a href="10-智能指针类型(三).html" class="active">智能指针类型(三)</a></li><li class="chapter-item expanded affix "><a href="11-智能指针类型(四).html">智能指针类型(四)</a></li><li class="chapter-item expanded affix "><a href="12-std库(一)FFI及内存管理.html">std库(一)FFI及内存管理</a></li><li class="chapter-item expanded affix "><a href="13-std库(二)文件描述符及进程管理.html">std库(二)文件描述符及进程管理</a></li><li class="chapter-item expanded affix "><a href="14-std库(三)线程间锁通信.html">std库(三)线程间锁通信</a></li><li class="chapter-item expanded affix "><a href="15-std库(四)线程临界区类型.html">std库(四)线程临界区类型</a></li><li class="chapter-item expanded affix "><a href="16-std库(五)线程管理.html">std库(五)线程管理</a></li><li class="chapter-item expanded affix "><a href="17-std库(六)mpsc通信.html">std库(六)mpsc通信</a></li><li class="chapter-item expanded affix "><a href="18-std库(七)RUST的RUNTIME.html">std库(七)RUST的RUNTIME</a></li><li class="chapter-item expanded affix "><a href="19-std库(八)RUST文件系统.html">std库(八)RUST文件系统</a></li><li class="chapter-item expanded affix "><a href="20-std库(九)RUST的IO.html">std库(九)RUST的IO</a></li><li class="chapter-item expanded affix "><a href="21-RUST的异步编程.html">RUST的异步编程</a></li><li class="chapter-item expanded affix "><a href="后记.html">后记</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">rust-inside-std-book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h2 id="rct-分析"><a class="header" href="#rct-分析"><code>Rc&lt;T&gt;</code> 分析</a></h2>
+<p><code>Rc&lt;T&gt;</code>主要解决堆内存多份借用的情况，相比于<code>&amp;Box&lt;T&gt;</code>的解决方案，<code>Rc&lt;T&gt;</code>可以基本上不用考虑生命周期导致的编码负担。同时利用伴生的<code>Weak&lt;T&gt;</code>解决了变量相互之间的循环引用问题。
+相比与<code>Box&lt;T&gt;</code>,<code>Rc&lt;T&gt;</code>是更常用的堆内存智能指针类型。</p>
+<p><code>Rc&lt;T&gt;</code>解决了两个数据结构互指的情况，这在结构体组合，循环链表，树，图的数据结构中都有大量的应用。
+<code>Rc&lt;T&gt;</code>的结构定义如下：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//在堆内存申请的结构体
+//注意，这里使用了C语言的内存布局，在内存中的成员的顺序必须按照声明的顺序排列
+#[repr(C)]
+struct RcBox&lt;T: ?Sized&gt; {
+    //拥有所有权的智能指针Rc&lt;T&gt;的计数
+    strong: Cell&lt;usize&gt;,
+    //不拥有所有权的智能指针Weak&lt;T&gt;的计数
+    weak: Cell&lt;usize&gt;,
+    value: T,
+}
+
+//和Unique&lt;T&gt;类似
+pub struct Rc&lt;T: ?Sized&gt; {
+    //堆内存块的指针
+    ptr: NonNull&lt;RcBox&lt;T&gt;&gt;,
+    //表示拥有内存块的所有权，内存块由本结构释放
+    phantom: PhantomData&lt;RcBox&lt;T&gt;&gt;,
+}
+//没有堆内存块的所有权
+pub struct Weak&lt;T: ?Sized&gt; {
+   ptr: NonNull&lt;RcBox&lt;T&gt;&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>在创建两个结构体变量互指的指针时，会遇到生命周期陷阱，无论先释放那个结构变量，都会导致另外那个结构变量出现悬垂指针。但如果在代码中时刻关注这种情况，那就太不RUST。<br />
+为此， <code>Rc&lt;T&gt;</code>提供了weak和strong两种堆内存指针的方式，<code>Rc&lt;T&gt;</code>申请的堆内存可以没有初始化，未初始化的堆内存可以生成<code>WeakT&gt;</code>用于给其他结构访问堆内存。同时堆内存用strong的方式来保护<code>Rc&lt;T&gt;</code>在未初始化时不被读写。且weak和strong可以相互之间转换，这就以RUST方式解决了生命周期陷阱问题。<br />
+对<code>Rc&lt;T&gt;</code>建议的使用方式是各需要访问堆内存的类型仅使用<code>Weak&lt;T&gt;</code>作为平时的成员指针。当需要对<code>Rc&lt;T&gt;</code>做操作时，将<code>Weak&lt;T&gt;</code> upgrade为<code>Rc&lt;T&gt;</code>,操作完成后，将<code>Rc&lt;T&gt;</code> 生命周期终结。</p>
+<p><code>Rc&lt;T&gt;</code>的创建方法及析构方法代码如下：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//由结构体成员生成结构的辅助方法
+impl&lt;T: ?Sized&gt; Rc&lt;T&gt; {
+    //获取内部的RcBox
+    fn inner(&amp;self) -&gt; &amp;RcBox&lt;T&gt; {
+        unsafe { self.ptr.as_ref() }
+    }
+
+    //由成员创建结构体，注意，这里没有对strong做计数增操作
+    //因此，此处的内部ptr应是被别的Rc&lt;T&gt;解封装出来的
+    fn from_inner(ptr: NonNull&lt;RcBox&lt;T&gt;&gt;) -&gt; Self {
+        Self { ptr, phantom: PhantomData }
+    }
+    //由裸指针创建结构体，注意，这里没有对strong做计数增操作
+    //因此，此处的内部ptr应是被别的Rc&lt;T&gt;解封装出来的
+    unsafe fn from_ptr(ptr: *mut RcBox&lt;T&gt;) -&gt; Self {
+        Self::from_inner(unsafe { NonNull::new_unchecked(ptr) })
+    }
+}
+
+impl&lt;T&gt; Rc&lt;T&gt; {
+    //由已初始化变量创建Rc&lt;T&gt;
+    pub fn new(value: T) -&gt; Rc&lt;T&gt; {
+        //首先创建RcBox&lt;T&gt;，然后生成Box&lt;RcBox&lt;T&gt;&gt;, 随后用leak得到RcBox&lt;T&gt;的堆内存指针，
+        //用堆内存指针创建Rc&lt;T&gt;，内存申请由Box&lt;T&gt;实际执行
+        Self::from_inner(
+            Box::leak(box RcBox { strong: Cell::new(1), weak: Cell::new(1), value }).into(),
+        )
+    }
+
+    //用于创建一个互相引用场景的Rc&lt;T&gt;
+    pub fn new_cyclic(data_fn: impl FnOnce(&amp;Weak&lt;T&gt;) -&gt; T) -&gt; Rc&lt;T&gt; {
+        // 下面与new函数代码类似，只是value没有初始化。
+        // 因为value没有初始化，strong赋值为0，但可以支持Weak&lt;T&gt;的引用
+        let uninit_ptr: NonNull&lt;_&gt; = Box::leak(box RcBox {
+            strong: Cell::new(0),
+            weak: Cell::new(1),
+            value: mem::MaybeUninit::&lt;T&gt;::uninit(),
+        })
+        .into();
+        
+        //init_ptr后继会被初始化，但此时还没有
+        let init_ptr: NonNull&lt;RcBox&lt;T&gt;&gt; = uninit_ptr.cast();
+
+        //生成Weak
+        let weak = Weak { ptr: init_ptr };
+
+        // 利用回调闭包获得value的值，将weak传递出去是因为cyclic默认结构体初始化需要使用weak.
+        // 用回调函数的处理可以让初始化一次完成，以免初始化以后还要修改结构体的指针。
+        let data = data_fn(&amp;weak);
+
+        unsafe {
+            let inner = init_ptr.as_ptr();
+            //addr_of_mut!可以万无一失，写入值后，初始化已经完成
+            ptr::write(ptr::addr_of_mut!((*inner).value), data);
+            
+            //可以更新strong的值为1了
+            let prev_value = (*inner).strong.get();
+            debug_assert_eq!(prev_value, 0, &quot;No prior strong references should exist&quot;);
+            (*inner).strong.set(1);
+        }
+
+        //strong登场
+        let strong = Rc::from_inner(init_ptr);
+
+        // 这里是因为strong整体拥有一个weak计数，所以此处不对wek做drop处理以维持weak计数。前面的回调函数中应该使用weak.clone增加weak的计数。
+        mem::forget(weak);
+        strong
+    }
+
+    //生成一个未初始化的Rc&lt;T&gt;，选择了直接做内存申请
+    pub fn new_uninit() -&gt; Rc&lt;mem::MaybeUninit&lt;T&gt;&gt; {
+        unsafe {
+            //Rc自身的内存申请函数，见下文的分析
+            Rc::from_ptr(Rc::allocate_for_layout(
+                Layout::new::&lt;T&gt;(),
+                |layout| Global.allocate(layout),
+                |mem| mem as *mut RcBox&lt;mem::MaybeUninit&lt;T&gt;&gt;,
+            ))
+        }
+    }
+
+    //防止内存不足的创建函数
+    pub fn try_new(value: T) -&gt; Result&lt;Rc&lt;T&gt;, AllocError&gt; {
+        // 就是用Box::try_new来完成try的工作
+        Ok(Self::from_inner(
+            Box::leak(Box::try_new(RcBox { strong: Cell::new(1), weak: Cell::new(1), value })?)
+                .into(),
+        ))
+    }
+
+    //对未初始化的Rc的try new
+    pub fn try_new_uninit() -&gt; Result&lt;Rc&lt;mem::MaybeUninit&lt;T&gt;&gt;, AllocError&gt; {
+        unsafe {
+            //内存申请函数需要考虑申请不到的情况
+            Ok(Rc::from_ptr(Rc::try_allocate_for_layout(
+                Layout::new::&lt;T&gt;(),
+                //就用Global Allocator，没有考虑其他的Allocator
+                |layout| Global.allocate(layout),
+                |mem| mem as *mut RcBox&lt;mem::MaybeUninit&lt;T&gt;&gt;,
+            )?))
+        }
+    }
+    ...
+}
+
+//堆内存申请函数
+impl&lt;T: ?Sized&gt; Rc&lt;T&gt; {
+   unsafe fn allocate_for_layout(
+       value_layout: Layout,
+       allocate: impl FnOnce(Layout) -&gt; Result&lt;NonNull&lt;[u8]&gt;, AllocError&gt;,
+       mem_to_rcbox: impl FnOnce(*mut u8) -&gt; *mut RcBox&lt;T&gt;,
+   ) -&gt; *mut RcBox&lt;T&gt; {
+       // 根据T计算RcBox需要的内存块布局，注意用RcBox&lt;()&gt;获取仅包含strong及weak两个成员的RcBox的layout这个技巧
+       //首先计算strong及weak两个成员的layout,然后对内部T类型的layout加以扩充，再做对齐的补充。
+       let layout = Layout::new::&lt;RcBox&lt;()&gt;&gt;().extend(value_layout).unwrap().0.pad_to_align();
+       unsafe {
+           //要考虑不成功的可能性
+           Rc::try_allocate_for_layout(value_layout, allocate, mem_to_rcbox)
+               .unwrap_or_else(|_| handle_alloc_error(layout))
+       }
+   }
+
+   unsafe fn try_allocate_for_layout(
+       value_layout: Layout,
+       allocate: impl FnOnce(Layout) -&gt; Result&lt;NonNull&lt;[u8]&gt;, AllocError&gt;,
+       mem_to_rcbox: impl FnOnce(*mut u8) -&gt; *mut RcBox&lt;T&gt;,
+   ) -&gt; Result&lt;*mut RcBox&lt;T&gt;, AllocError&gt; {
+       //计算需要的内存块布局layout
+       let layout = Layout::new::&lt;RcBox&lt;()&gt;&gt;().extend(value_layout).unwrap().0.pad_to_align();
+
+       // 申请内存，有可能不成功
+       let ptr = allocate(layout)?;
+
+       // 将裸指针类型内存类型转换成*mut RcBox&lt;xxx&gt;类型，xxx有可能是MaybeUninit&lt;T&gt;，但也可能是初始化完毕的类型。总之，调用代码会保证初始化，所以此处正常的设置strong及weak，
+       let inner = mem_to_rcbox(ptr.as_non_null_ptr().as_ptr());
+       unsafe {
+           debug_assert_eq!(Layout::for_value(&amp;*inner), layout);
+
+           ptr::write(&amp;mut (*inner).strong, Cell::new(1));
+           ptr::write(&amp;mut (*inner).weak, Cell::new(1));
+       }
+
+       Ok(inner)
+   }
+   
+   //根据一个裸指针来创建RcBox&lt;T&gt;，返回裸指针，这个函数完成时堆内存没有初始化，后继需要写入值
+   unsafe fn allocate_for_ptr(ptr: *const T) -&gt; *mut RcBox&lt;T&gt; {
+       unsafe {
+           Self::allocate_for_layout(
+               // 用*const T获取Layout
+               Layout::for_value(&amp;*ptr),
+               |layout| Global.allocate(layout),
+               //此处应该也可以用mem as *mut RcBox&lt;T&gt;，
+               |mem| (ptr as *mut RcBox&lt;T&gt;).set_ptr_value(mem),
+           )
+       }
+   }
+
+   //从Box&lt;T&gt;转换成RcBox&lt;T&gt;
+   fn from_box(v: Box&lt;T&gt;) -&gt; Rc&lt;T&gt; {
+       unsafe {
+           //解封装Box，获取堆内存指针
+           let (box_unique, alloc) = Box::into_unique(v);
+           let bptr = box_unique.as_ptr();
+
+           let value_size = size_of_val(&amp;*bptr);
+           //获得* mut RcBox&lt;T&gt;
+           let ptr = Self::allocate_for_ptr(bptr);
+
+           // 将T的内容拷贝入RcBox的value
+           ptr::copy_nonoverlapping(
+               bptr as *const T as *const u8,
+               &amp;mut (*ptr).value as *mut _ as *mut u8,
+               value_size,
+           );
+
+           // 重要，这里仅仅释放堆内存，但是如果堆内存中的T类型变量还有其他需要释放的内存，则没有处理，即没有调用drop(T)，drop(T)由新生成的RcBox&lt;T&gt;再释放的时候负责
+           box_free(box_unique, alloc);
+           
+           // 生成Rc&lt;T&gt;
+           Self::from_ptr(ptr)
+       }
+   }
+}
+
+//析构
+unsafe impl&lt;#[may_dangle] T: ?Sized&gt; Drop for Rc&lt;T&gt; {
+   //只要strong计数为零，就drop掉堆内存变量
+   //Weak可以不依赖于内存初始化。
+   fn drop(&amp;mut self) {
+       unsafe {
+           //strong计数减1
+           self.inner().dec_strong();
+           if self.inner().strong() == 0 {
+               // 触发堆内存变量的drop()操作
+               ptr::drop_in_place(Self::get_mut_unchecked(self));
+
+               // 对于strong整体会有一个weak计数，需要减掉
+               // 这里实际上与C语言一样容易出错。
+               self.inner().dec_weak();
+
+               if self.inner().weak() == 0 {
+                   //只有weak为0的时候才能够释放堆内存
+                   Global.deallocate(self.ptr.cast(), Layout::for_value(self.ptr.as_ref()));
+               }
+           }
+       }
+   }
+}
+
+impl&lt;T: ?Sized&gt; Deref for Rc&lt;T&gt; {
+   type Target = T;
+
+   fn deref(&amp;self) -&gt; &amp;T {
+       &amp;self.inner().value
+   }
+}
+
+<span class="boring">}</span></code></pre></pre>
+<p><code>Weak&lt;T&gt;</code>的结构体及创建，析构方法：
+在RC方法内部，Weak可以由<code>Weak{ptr:self_ptr}</code>直接创建，可见前面代码的例子，但要注意weak计数和Weak变量需要匹配</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span>
+<span class="boring">fn main() {
+</span>impl&lt;T&gt; Weak&lt;T&gt; {
+   //创建一个空的Weak
+   pub fn new() -&gt; Weak&lt;T&gt; {
+       Weak { ptr: NonNull::new(usize::MAX as *mut RcBox&lt;T&gt;).expect(&quot;MAX is not 0&quot;) }
+   }
+}
+//判断Weak是否为空的关联函数
+pub(crate) fn is_dangling&lt;T: ?Sized&gt;(ptr: *mut T) -&gt; bool {
+   let address = ptr as *mut () as usize;
+   address == usize::MAX
+}
+impl &lt;T:?Sized&gt; Weak&lt;T&gt; {
+   //从Weak中获得堆内存中T类型的变量指针
+   pub fn as_ptr(&amp;self) -&gt; *const T {
+       let ptr: *mut RcBox&lt;T&gt; = NonNull::as_ptr(self.ptr);
+
+       if is_dangling(ptr) {
+           ptr as *const T
+       } else {
+           //返回T类型变量的指针
+           unsafe { ptr::addr_of_mut!((*ptr).value) }
+       }
+   }
+   //会消费掉Weak，获取T类型变量指针，此指针以后需要重新组建Weak&lt;T&gt;,否则
+   //堆内存中的RcBox的weak会出现计数错误
+   pub fn into_raw(self) -&gt; *const T {
+       let result = self.as_ptr();
+       mem::forget(self);
+       result
+   }
+   
+   //ptr是从into_raw得到的返回值
+   pub unsafe fn from_raw(ptr: *const T) -&gt; Self {
+       let ptr = if is_dangling(ptr as *mut T) {
+           ptr as *mut RcBox&lt;T&gt;
+       } else {
+           //需要从T类型的指针恢复RcBox的指针
+           let offset = unsafe { data_offset(ptr) };
+           unsafe { (ptr as *mut RcBox&lt;T&gt;).set_ptr_value((ptr as *mut u8).offset(-offset)) }
+       };
+       //RcBox的weak的计数已经有了这个计数
+       Weak { ptr: unsafe { NonNull::new_unchecked(ptr) } }
+   }
+
+   //创建WeakInner
+   fn inner(&amp;self) -&gt; Option&lt;WeakInner&lt;'_&gt;&gt; {
+       if is_dangling(self.ptr.as_ptr()) {
+           None
+       } else {
+           Some(unsafe {
+               let ptr = self.ptr.as_ptr();
+               WeakInner { strong: &amp;(*ptr).strong, weak: &amp;(*ptr).weak }
+           })
+       }
+   }
+
+   //从Weak得到Rc, 如前所述，对Rc正确的打开方式应该是仅用Weak，然后适当的时候升级到Rc&lt;T&gt;，
+   //并且在使用完毕后就将Rc&lt;T&gt;生命周期终止掉，即这个函数返回的Rc&lt;T&gt;生命周期最好仅在一个函数中。
+   pub fn upgrade(&amp;self) -&gt; Option&lt;Rc&lt;T&gt;&gt; {
+       //获取内部的RcBox
+       let inner = self.inner()?;
+       if inner.strong() == 0 {
+           None
+       } else {
+           //对RcBox&lt;T&gt;的strong增加计数
+           inner.inc_strong();
+           //利用RcBox生成新的Rc&lt;T&gt;
+           Some(Rc::from_inner(self.ptr))
+       }
+   }
+}
+impl &lt;T:?Sized&gt; Rc&lt;T&gt; {
+   ...
+
+   //生成新的Weak&lt;T&gt;
+   pub fn downgrade(this: &amp;Self) -&gt; Weak&lt;T&gt; {
+       //增加weak计数
+       this.inner().inc_weak();
+       // 确保不出错
+       debug_assert!(!is_dangling(this.ptr.as_ptr()));
+       // 生成Weak&lt;T&gt;
+       Weak { ptr: this.ptr }
+   }
+}
+<span class="boring">}</span></code></pre></pre>
+<p><code>Rc&lt;T&gt;</code>的其他方法：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span> impl&lt;T: Clone&gt; Rc&lt;T&gt; {
+    //Rc&lt;T&gt; 实际上是需要配合RefCell&lt;T&gt;来完成对堆内存的修改需求
+    //下面的函数用了类似写时复制的方式，仅能在某些场景下使用
+    pub fn make_mut(this: &amp;mut Self) -&gt; &amp;mut T {
+        if Rc::strong_count(this) != 1 {
+            // 如果Rc多于一个，则创建一个拷贝的变量
+            // 申请一个未初始化的Rc
+            let mut rc = Self::new_uninit();
+            unsafe {
+                //将self中的value值写入新创建的变量
+                let data = Rc::get_mut_unchecked(&amp;mut rc);
+                (**this).write_clone_into_raw(data.as_mut_ptr());
+                //这里把this代表的Rc释放掉，并赋以新值。
+                //make_mut的本意是从this中生成一个mut，因此将this代表的Rc&lt;T&gt;释放掉是合乎
+                //函数的意义的
+                *this = rc.assume_init();
+            }
+        } else if Rc::weak_count(this) != 0 {
+            // 如果Rc&lt;T&gt;仅有一个strong引用，但有其他的weak引用
+            // 同样需要新建一个Rc&lt;T&gt;
+            let mut rc = Self::new_uninit();
+            unsafe {
+                //下面用了与strong !=1 的情况的不同写法，但应该完成了同样的工作
+                let data = Rc::get_mut_unchecked(&amp;mut rc);
+                data.as_mut_ptr().copy_from_nonoverlapping(&amp;**this, 1);
+                
+                //将strong引用减去，堆内存不再存在strong引用
+                this.inner().dec_strong();
+                // strong已经为0，所以将strong的weak计数减掉
+                this.inner().dec_weak();
+                //不能用*this = 的表达，因为会导致对堆内存变量的释放，这不符合语义。
+                ptr::write(this, rc.assume_init());
+            }
+        }
+        //已经确保了只有一个Rc&lt;T&gt;，且没有Weak&lt;T&gt;，可以任意对堆变量做修改了
+        unsafe { &amp;mut this.ptr.as_mut().value }
+    }
+ }
+<span class="boring">}</span></code></pre></pre>
+<p>Clone trait实现：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: ?Sized&gt; Clone for Rc&lt;T&gt; {
+   //clone就是增加一个strong的计数
+   fn clone(&amp;self) -&gt; Rc&lt;T&gt; {
+       self.inner().inc_strong();
+       Self::from_inner(self.ptr)
+   }
+}
+
+impl&lt;T: ?Sized&gt; Clone for Weak&lt;T&gt; {
+   fn clone(&amp;self) -&gt; Weak&lt;T&gt; {
+       if let Some(inner) = self.inner() {
+           inner.inc_weak()
+       }
+       Weak { ptr: self.ptr }
+   }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>对<code>Rc&lt;MaybeUninit&lt;T&gt;&gt;</code>初始化后assume_init实现方法：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T&gt; Rc&lt;mem::MaybeUninit&lt;T&gt;&gt; {
+    pub unsafe fn assume_init(self) -&gt; Rc&lt;T&gt; {
+        //先用ManuallyDrop将self封装以便不对self做drop操作
+        //然后取出内部的堆指针形成新的Rc&lt;T&gt;。
+        Rc::from_inner(mem::ManuallyDrop::new(self).ptr.cast())
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p><code>Rc&lt;T&gt;</code>其他方法：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: ?Sized&gt; Rc&lt;T&gt; {
+    //相当于Rc&lt;T&gt;的leak函数
+    pub fn into_raw(this: Self) -&gt; *const T {
+        let ptr = Self::as_ptr(&amp;this);
+        //把堆内存指针取出后，由调用代码负责释放，
+        //本结构体要规避后继的释放操作
+        mem::forget(this);
+        ptr
+    }
+
+    //获得堆内存变量的指针，不会涉及安全问题,注意，这里ptr不是堆内存块的首地址，而是向后有偏移
+    //因为RcBox&lt;T&gt;采用C语言的内存布局，所以value在最后
+    pub fn as_ptr(this: &amp;Self) -&gt; *const T {
+        let ptr: *mut RcBox&lt;T&gt; = NonNull::as_ptr(this.ptr);
+
+        unsafe { ptr::addr_of_mut!((*ptr).value) }
+    }
+
+    //从堆内存T类型变量的指针重建Rc&lt;T&gt;，注意，这里的ptr一般是调用Rc&lt;T&gt;::into_raw()获得的裸指针
+    //ptr不是堆内存块首地址，需要减去strong和weak的内存大小
+    pub unsafe fn from_raw(ptr: *const T) -&gt; Self {
+        let offset = unsafe { data_offset(ptr) };
+
+        // 减去偏移量，得到正确的RcBox堆内存的首地址
+        let rc_ptr =
+            unsafe { (ptr as *mut RcBox&lt;T&gt;).set_ptr_value((ptr as *mut u8).offset(-offset)) };
+
+        unsafe { Self::from_ptr(rc_ptr) }
+    }
+<span class="boring">}</span></code></pre></pre>
+<p>into_raw, from_raw要成对使用，否则就必须对这两个方法的内存由清晰的认知。否则极易出现问题。
+<code>Rc&lt;T&gt;</code> 转换为<code>Weak&lt;T&gt;</code></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>    pub fn get_mut(this: &amp;mut Self) -&gt; Option&lt;&amp;mut T&gt; {
+        if Rc::is_unique(this) { unsafe { Some(Rc::get_mut_unchecked(this)) } } else { None }
+    }
+
+    pub unsafe fn get_mut_unchecked(this: &amp;mut Self) -&gt; &amp;mut T {
+        unsafe { &amp;mut (*this.ptr.as_ptr()).value }
+    }
+
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="arct的代码实现"><a class="header" href="#arct的代码实现"><code>Arc&lt;T&gt;</code>的代码实现</a></h2>
+<p><code>Arc&lt;T&gt;</code> 是<code>Rc&lt;T&gt;</code>的多线程版本，实际上，就连代码都基本类似，只是把计数值的类型换成了原子变量
+<code>Arc&lt;T&gt;</code>类型结构定义如下：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//在堆内存分配的结构体
+#[repr(C)]
+struct ArcInner&lt;T: ?Sized&gt; {
+    //用原子变量实现计数，使得计数修改不会因多线程竞争而出错
+    //AtomicUsize 如下：
+    // pub struct AtomicUsize { v: UnsafeCell&lt;usize&gt;}
+    strong: atomic::AtomicUsize,
+    weak: atomic::AtomicUsize,
+    data: T,
+}
+
+//支持Send
+unsafe impl&lt;T: ?Sized + Sync + Send&gt; Send for ArcInner&lt;T&gt; {}
+//支持Sync
+unsafe impl&lt;T: ?Sized + Sync + Send&gt; Sync for ArcInner&lt;T&gt; {}
+
+//Arc&lt;T&gt;的结构
+pub struct Arc&lt;T: ?Sized&gt; {
+    ptr: NonNull&lt;ArcInner&lt;T&gt;&gt;,
+    phantom: PhantomData&lt;ArcInner&lt;T&gt;&gt;,
+}
+//对Send支持
+unsafe impl&lt;T: ?Sized + Sync + Send&gt; Send for Arc&lt;T&gt; {}
+//对Sync支持
+unsafe impl&lt;T: ?Sized + Sync + Send&gt; Sync for Arc&lt;T&gt; {}
+
+//Weak&lt;T&gt;的结构
+pub struct Weak&lt;T: ?Sized&gt; {
+    ptr: NonNull&lt;ArcInner&lt;T&gt;&gt;,
+}
+
+unsafe impl&lt;T: ?Sized + Sync + Send&gt; Send for Weak&lt;T&gt; {}
+unsafe impl&lt;T: ?Sized + Sync + Send&gt; Sync for Weak&lt;T&gt; {}
+<span class="boring">}</span></code></pre></pre>
+<p><code>ArcInner&lt;T&gt;</code>对应<code>RcBox&lt;T&gt;</code>, <code>Arc&lt;T&gt;</code>对应<code>Rc&lt;T&gt;</code>, <code>sync::Weak&lt;T&gt;</code>对应<code>rc::Weak&lt;T&gt;</code>。逻辑与<code>Rc&lt;T&gt;</code>模块的逻辑都基本相同。 <code>Arc&lt;T&gt;</code>除了<code>ArcInner&lt;T&gt;</code>与<code>RcBox&lt;T&gt;</code>有区别，计数器用原子变量实现，使得计数器的加减操作不会受多线程数据竞争的影响，从而使得<code>Arc&lt;T&gt;</code>能够在多线程环境下使用。这里需要注意<code>Rc&lt;T&gt;</code>及<code>Arc&lt;T&gt;</code>实际上仅仅是不可变引用的多线程替代(多于两个以上)，因此<code>Arc&lt;T&gt;</code>的实现中仅仅关注<code>Arc&lt;T&gt;</code>类型本身的多线程共享的保护机制。至于内部的泛型类型变量data，仍然需要泛型类型自身对多线程共享的实现。</p>
+<p>与 <code>Rc&lt;T&gt;</code>相同，<code>Arc&lt;T&gt;</code>也提供了weak和strong两种堆内存指针的方式，<code>Arc&lt;T&gt;</code>申请的堆内存可以没有初始化，未初始化的堆内存可以生成<code>WeakT&gt;</code>用于给其他结构访问堆内存。同时堆内存用strong的方式来保护<code>Arc&lt;T&gt;</code>在未初始化时不被读写。且weak和strong可以相互之间转换，这就以rust方式解决了生命周期陷阱问题。
+利用<code>Weak&lt;T&gt;</code>做指针的结构体，在需要访问堆内存时，可以从<code>Weak&lt;T&gt;</code>另外创建<code>Arc&lt;T&gt;</code>, 完成访问后即可让创建的<code>Arc&lt;T&gt;</code>生命周期终结。实际上，各需要访问堆内存的类型仅使用<code>Weak&lt;T&gt;</code>应该是一个非常好的做法。</p>
+<p><code>Arc&lt;T&gt;</code>的创建方法及析构方法代码如下：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//已经存在堆内存，从堆内存来创建Arc&lt;T&gt;
+impl&lt;T:?Sized&gt; Arc&lt;T&gt; {
+   //注意这里没有增加strong计数，
+   fn from_inner(ptr: NonNull&lt;ArcInner&lt;T&gt;&gt;) -&gt; Self {
+       Self { ptr, phantom: PhantomData }
+   }
+
+   //注意这里没有增加strong的计数
+   unsafe fn from_ptr(ptr: *mut ArcInner&lt;T&gt;) -&gt; Self {
+       unsafe { Self::from_inner(NonNull::new_unchecked(ptr)) }
+   }
+}
+
+impl&lt;T&gt; Arc&lt;T&gt; {
+    //由已初始化变量创建Arc&lt;T&gt;
+    pub fn new(data: T) -&gt; Arc&lt;T&gt; {
+        //首先创建ArcInner&lt;T&gt;，然后生成Box&lt;ArcInner&lt;T&gt;&gt;, 随后用leak得到ArcInner&lt;T&gt;的堆内存指针，
+        //用堆内存指针创建Rc&lt;T&gt;，内存申请由Box&lt;T&gt;实际执行
+       let x: Box&lt;_&gt; = box ArcInner {
+           strong: atomic::AtomicUsize::new(1),
+           weak: atomic::AtomicUsize::new(1),
+           data,
+       };
+       Self::from_inner(Box::leak(x).into())
+   }
+    //用于创建一个互相引用场景的Arc&lt;T&gt;
+   pub fn new_cyclic(data_fn: impl FnOnce(&amp;Weak&lt;T&gt;) -&gt; T) -&gt; Arc&lt;T&gt; {
+        // 下面与new函数代码类似，只是value没有初始化。
+        // 因为value没有初始化，strong赋值为0，但可以支持Weak&lt;T&gt;的引用
+       let uninit_ptr: NonNull&lt;_&gt; = Box::leak(box ArcInner {
+           strong: atomic::AtomicUsize::new(0),
+           weak: atomic::AtomicUsize::new(1),
+           data: mem::MaybeUninit::&lt;T&gt;::uninit(),
+       })
+       .into();
+
+        //init_ptr后继会被初始化，但此时还没有
+       let init_ptr: NonNull&lt;ArcInner&lt;T&gt;&gt; = uninit_ptr.cast();
+
+        //生成Weak
+       let weak = Weak { ptr: init_ptr };
+
+        // 利用回调闭包获得value的值，将weak传递出去是因为cyclic默认结构体初始化需要使用weak.
+        // 用回调函数的处理可以让初始化一次完成，以免初始化以后还要修改结构体的指针。
+       let data = data_fn(&amp;weak);
+
+       // 完成对值的初始化.并转化Weak为Strong.
+       unsafe {
+           let inner = init_ptr.as_ptr();
+            //addr_of_mut!可以万无一失，写入值后，初始化已经完成
+           ptr::write(ptr::addr_of_mut!((*inner).data), data);
+
+            //可以更新strong的值为1了,注意这里的原子函数，这个函数不会被其他线程打断导致更新失败
+           let prev_value = (*inner).strong.fetch_add(1, Release);
+           debug_assert_eq!(prev_value, 0, &quot;No prior strong references should exist&quot;);
+       }
+
+        //strong登场
+       let strong = Arc::from_inner(init_ptr);
+
+        // 这里是因为strong整体拥有一个weak计数，所以此处不对weak做drop处理以维持weak计数。前面的回调函数中应该使用weak.clone增加weak的计数。
+       mem::forget(weak);
+       strong
+   }
+
+    //生成一个未初始化的Arc&lt;T&gt;，选择直接做内存申请
+   pub fn new_uninit() -&gt; Arc&lt;mem::MaybeUninit&lt;T&gt;&gt; {
+       unsafe {
+            //Arc自身的内存申请函数，后继有分析
+           Arc::from_ptr(Arc::allocate_for_layout(
+               Layout::new::&lt;T&gt;(),
+               |layout| Global.allocate(layout),
+               |mem| mem as *mut ArcInner&lt;mem::MaybeUninit&lt;T&gt;&gt;,
+           ))
+       }
+   }
+    //防止内存不足的创建函数
+   pub fn try_new(data: T) -&gt; Result&lt;Arc&lt;T&gt;, AllocError&gt; {
+        // 就是用Box::try_new来完成try的工作
+       let x: Box&lt;_&gt; = Box::try_new(ArcInner {
+           strong: atomic::AtomicUsize::new(1),
+           weak: atomic::AtomicUsize::new(1),
+           data,
+       })?;
+       Ok(Self::from_inner(Box::leak(x).into()))
+   }
+
+    //对未初始化的Rc的try new
+   pub fn try_new_uninit() -&gt; Result&lt;Arc&lt;mem::MaybeUninit&lt;T&gt;&gt;, AllocError&gt; {
+       unsafe {
+            //内存申请函数需要考虑申请不到的情况
+           Ok(Arc::from_ptr(Arc::try_allocate_for_layout(
+               Layout::new::&lt;T&gt;(),
+                //就用Global Allocator，没有考虑其他Allocator
+               |layout| Global.allocate(layout),
+               |mem| mem as *mut ArcInner&lt;mem::MaybeUninit&lt;T&gt;&gt;,
+           )?))
+       }
+   }
+    ...
+}
+
+//堆内存申请函数
+impl&lt;T: ?Sized&gt; Arc&lt;T&gt; {
+   unsafe fn allocate_for_layout(
+       value_layout: Layout,
+       allocate: impl FnOnce(Layout) -&gt; Result&lt;NonNull&lt;[u8]&gt;, AllocError&gt;,
+       mem_to_arcinner: impl FnOnce(*mut u8) -&gt; *mut ArcInner&lt;T&gt;,
+   ) -&gt; *mut ArcInner&lt;T&gt; {
+       // 根据T计算ArcInner需要的内存块布局，与Rc&lt;T&gt;的同名函数基本相同，请参考
+       let layout = Layout::new::&lt;ArcInner&lt;()&gt;&gt;().extend(value_layout).unwrap().0.pad_to_align();
+       unsafe {
+           //要考虑不成功的可能性
+           Arc::try_allocate_for_layout(value_layout, allocate, mem_to_arcinner)
+               .unwrap_or_else(|_| handle_alloc_error(layout))
+       }
+   }
+
+   unsafe fn try_allocate_for_layout(
+       value_layout: Layout,
+       allocate: impl FnOnce(Layout) -&gt; Result&lt;NonNull&lt;[u8]&gt;, AllocError&gt;,
+       mem_to_arcinner: impl FnOnce(*mut u8) -&gt; *mut ArcInner&lt;T&gt;,
+   ) -&gt; Result&lt;*mut ArcInner&lt;T&gt;, AllocError&gt; {
+       //计算需要的内存块布局layout
+       let layout = Layout::new::&lt;ArcInner&lt;()&gt;&gt;().extend(value_layout).unwrap().0.pad_to_align();
+
+       // 申请内存，有可能不成功
+       let ptr = allocate(layout)?;
+
+       // 将裸指针类型内存类型转换成*mut ArcInner&lt;xxx&gt;类型，xxx有可能是MaybeUninit&lt;T&gt;，但也可能是初始化完毕的类型。总之，调用代码会保证初始化，所以此处正常的设置strong及weak，
+       let inner = mem_to_arcinner(ptr.as_non_null_ptr().as_ptr());
+       debug_assert_eq!(unsafe { Layout::for_value(&amp;*inner) }, layout);
+
+       unsafe {
+           ptr::write(&amp;mut (*inner).strong, atomic::AtomicUsize::new(1));
+           ptr::write(&amp;mut (*inner).weak, atomic::AtomicUsize::new(1));
+       }
+
+       Ok(inner)
+   }
+
+   //根据一个裸指针来创建ArcInner&lt;T&gt;，返回裸指针，这个函数完成时堆内存没有初始化，后继需要写入值
+   unsafe fn allocate_for_ptr(ptr: *const T) -&gt; *mut ArcInner&lt;T&gt; {
+       unsafe {
+           Self::allocate_for_layout(
+               // 用*const T获取Layout
+               Layout::for_value(&amp;*ptr),
+               |layout| Global.allocate(layout),
+               //此处应该也可以用mem as *mut ArcInner&lt;T&gt;，
+               |mem| (ptr as *mut ArcInner&lt;T&gt;).set_ptr_value(mem) as *mut ArcInner&lt;T&gt;,
+           )
+       }
+   }
+
+   //从Box&lt;T&gt;转换成Arc&lt;T&gt;
+    fn from_box(v: Box&lt;T&gt;) -&gt; Arc&lt;T&gt; {
+       unsafe {
+           //解封装Box，获取堆内存指针
+           let (box_unique, alloc) = Box::into_unique(v);
+           let bptr = box_unique.as_ptr();
+
+           let value_size = size_of_val(&amp;*bptr);
+           //获得* mut ArcInner&lt;T&gt;
+           let ptr = Self::allocate_for_ptr(bptr);
+
+           // 将T的内容拷贝入ArcInner的value
+           ptr::copy_nonoverlapping(
+               bptr as *const T as *const u8,
+               &amp;mut (*ptr).data as *mut _ as *mut u8,
+               value_size,
+           );
+
+           // 重要，这里仅仅释放堆内存，但是如果堆内存中的T类型变量还有其他需要释放的内存，则没有处理，即没有调用drop(T)，drop(T)由新生成的ArcInner&lt;T&gt;再释放的时候负责
+           box_free(box_unique, alloc);
+
+           // 生成Arc&lt;T&gt;
+           Self::from_ptr(ptr)
+       }
+   }
+}
+
+//析构
+unsafe impl&lt;#[may_dangle] T: ?Sized&gt; Drop for Arc&lt;T&gt; {
+   fn drop(&amp;mut self) {
+       //如果当前的strong不是1,则返回，fetch_xxx函数返回之前的值
+       if self.inner().strong.fetch_sub(1, Release) != 1 {
+           return;
+       }
+
+       acquire!(self.inner().strong);
+
+       unsafe {
+           //见下面代码的分析
+           self.drop_slow();
+       }
+   }
+}
+impl &lt;T:?Sized&gt; Arc&lt;T&gt; {
+   ...
+   unsafe fn drop_slow(&amp;mut self) {
+       // 对堆内存的变量做drop操作，注意，这里不释放堆内存，只是释放变量所有权
+       unsafe { ptr::drop_in_place(Self::get_mut_unchecked(self)) };
+
+       // 所有的strong会创建一个Weak，对这个Weak做drop操作
+       drop(Weak { ptr: self.ptr });
+   }
+   ...
+}
+
+impl&lt;T: ?Sized&gt; Deref for Arc&lt;T&gt; {
+   type Target = T;
+
+   fn deref(&amp;self) -&gt; &amp;T {
+       &amp;self.inner().data
+   }
+}
+<span class="boring">}</span></code></pre></pre>
+<p><code>Weak&lt;T&gt;</code>的结构体及创建，析构方法：
+在RC方法内部，Weak可以由<code>Weak{ptr:self_ptr}</code>直接创建，可见前面代码的例子，但要注意weak计数和Weak变量需要匹配</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span>
+<span class="boring">fn main() {
+</span>impl&lt;T&gt; Weak&lt;T&gt; {
+   //创建一个空的Weak
+   pub fn new() -&gt; Weak&lt;T&gt; {
+       Weak { ptr: NonNull::new(usize::MAX as *mut ArcInner&lt;T&gt;).expect(&quot;MAX is not 0&quot;) }
+   }
+}
+
+struct WeakInner&lt;'a&gt; {
+   weak: &amp;'a atomic::AtomicUsize,
+   strong: &amp;'a atomic::AtomicUsize,
+}
+//判断Weak是否为空的关联函数
+pub(crate) fn is_dangling&lt;T: ?Sized&gt;(ptr: *mut T) -&gt; bool {
+   let address = ptr as *mut () as usize;
+   address == usize::MAX
+}
+
+impl &lt;T:?Sized&gt; Weak&lt;T&gt; {
+   pub fn as_ptr(&amp;self) -&gt; *const T {
+       let ptr: *mut ArcInner&lt;T&gt; = NonNull::as_ptr(self.ptr);
+
+       if is_dangling(ptr) {
+           ptr as *const T
+       } else {
+           //返回T类型变量的指针
+           unsafe { ptr::addr_of_mut!((*ptr).data) }
+       }
+   }
+   //会消费掉Weak，获取T类型变量指针，此指针以后需要重新组建Weak&lt;T&gt;,否则
+   //堆内存中的ArcInner的weak会出现计数错误
+   pub fn into_raw(self) -&gt; *const T {
+       let result = self.as_ptr();
+       mem::forget(self);
+       result
+   }
+   
+   //ptr是从into_raw得到的返回值
+   pub unsafe fn from_raw(ptr: *const T) -&gt; Self {
+       let ptr = if is_dangling(ptr as *mut T) {
+           ptr as *mut ArcInner&lt;T&gt;
+       } else {
+           //需要从T类型的指针恢复ArcInner的指针
+           let offset = unsafe { data_offset(ptr) };
+           unsafe { (ptr as *mut ArcInner&lt;T&gt;).set_ptr_value((ptr as *mut u8).offset(-offset)) }
+       };
+       //ArcInner的weak的计数已经有了这个计数
+       Weak { ptr: unsafe { NonNull::new_unchecked(ptr) } }
+   }
+   
+   //创建一个WeakInner
+   fn inner(&amp;self) -&gt; Option&lt;WeakInner&lt;'_&gt;&gt; {
+       if is_dangling(self.ptr.as_ptr()) {
+           None
+       } else {
+           //获取ArcInner&lt;T&gt;中strong和weak的引用
+           Some(unsafe {
+               let ptr = self.ptr.as_ptr();
+               WeakInner { strong: &amp;(*ptr).strong, weak: &amp;(*ptr).weak }
+           })
+       }
+   }
+   //从Weak得到Arc, 如前所述，对Arc正确的打开方式应该是仅用Weak，然后适当的时候升级到Arc&lt;T&gt;
+   //并且在使用完毕后就将Arc&lt;T&gt;生命周期终止掉，即这个函数返回Arc&lt;T&gt;生命周期最好仅在一个函数中。
+   pub fn upgrade(&amp;self) -&gt; Option&lt;Arc&lt;T&gt;&gt; {
+       //获取内部的ArcInner
+       let inner = self.inner()?;
+       //原子操作获得strong的值
+       let mut n = inner.strong.load(Relaxed);
+       
+       //因为是多线程操作，所以此时n已经可能被改写，所以用loop
+       //来确保n在已经改写的情况下正确
+       loop {
+           //如果strong是0，那堆内存已经被释放掉，不能再使用
+           if n == 0 {
+               return None;
+           }
+
+           // 不能多于最大的引用数目
+           if n &gt; MAX_REFCOUNT {
+               abort();
+           }
+
+           //以下确保在strong当前值是n的时候做加1操作
+           match inner.strong.compare_exchange_weak(n, n + 1, Acquire, Relaxed) {
+               //当前值为1且已经加1，生成Arc&lt;T&gt;
+               Ok(_) =&gt; return Some(Arc::from_inner(self.ptr)), // null checked above
+               //如果当前值不为n，则将n设置为当前值，进入下一轮循环。
+               Err(old) =&gt; n = old,
+           }
+       }
+   }
+}
+
+impl &lt;T:?Sized&gt; Arc&lt;T&gt; {
+   ...
+
+   //生成新的Weak&lt;T&gt;
+   pub fn downgrade(this: &amp;Self) -&gt; Weak&lt;T&gt; {
+       // 获取weak count.
+       let mut cur = this.inner().weak.load(Relaxed);
+
+       //要确定当前的weak count与上面取得一致
+       loop {
+           // 如果是usize::MAX，证明在创建过程中，等创建完毕后
+           // 再获取一次
+           if cur == usize::MAX {
+               hint::spin_loop();
+               cur = this.inner().weak.load(Relaxed);
+               continue;
+           }
+           
+           //确保在weak与当前值一致的情况下做原子操作，将weak加1
+           match this.inner().weak.compare_exchange_weak(cur, cur + 1, Acquire, Relaxed) {
+               Ok(_) =&gt; {
+                   // 确保不创建对不存在的变量的Weak
+                   debug_assert!(!is_dangling(this.ptr.as_ptr()));
+                   //创建Weak
+                   return Weak { ptr: this.ptr };
+               }
+               //如果当前的值与取值不一致，将取值更换为当前值，再做一次循环
+               Err(old) =&gt; cur = old,
+           }
+       }
+   }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>以上代码中，对于多线程的处理需要额外注意并理解。这是原子变量处理多线程的典型用法</p>
+<p><code>Arc&lt;T&gt;</code>的其他方法：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span> impl&lt;T: Clone&gt; Arc&lt;T&gt; {
+    //Rc&lt;T&gt; 实际上是需要配合RefCell&lt;T&gt;来完成对堆内存的修改需求
+    //下面的函数用了类似写时复制的方式，仅能在某些场景下使用
+    pub fn make_mut(this: &amp;mut Self) -&gt; &amp;mut T {
+        //判断strong的值是否为1，如果为1，则设置为0，以防止其他线程做修改 
+        if this.inner().strong.compare_exchange(1, 0, Acquire, Relaxed).is_err() {
+            // strong不为1，需要创建一个复制的Arc&lt;T&gt;变量
+            let mut arc = Self::new_uninit();
+            unsafe {
+                let data = Arc::get_mut_unchecked(&amp;mut arc);
+                (**this).write_clone_into_raw(data.as_mut_ptr());
+                *this = arc.assume_init();
+            }
+        } else if this.inner().weak.load(Relaxed) != 1 {
+            //当前为原strong为1且已经strong已经做了减1操作为0
+            //那此时weak如果为1，证明没有多余的Weak&lt;T&gt;被派生
+            //如果weak不为1，则证明有其他的Weak&lt;T&gt;存在，需要创建一个复制的Arc&lt;T&gt;
+
+            //这里因为strong已经被减1，所以本线程已经没有Arc&lt;T&gt;，所以创建一个
+            //Weak并由此变量的drop完成对weak计数的处理
+            let _weak = Weak { ptr: this.ptr };
+
+            // 创建一个新的复制的Arc&lt;T&gt;
+            let mut arc = Self::new_uninit();
+            unsafe {
+                let data = Arc::get_mut_unchecked(&amp;mut arc);
+                data.as_mut_ptr().copy_from_nonoverlapping(&amp;**this, 1);
+                ptr::write(this, arc.assume_init());
+            }
+        } else {
+            // strong及weak都是1，则恢复strong为1，直接使用当前的Arc&lt;T&gt;
+            this.inner().strong.store(1, Release);
+        }
+
+        //返回&amp;mut T
+        unsafe { Self::get_mut_unchecked(this) }
+       
+    }
+ }
+<span class="boring">}</span></code></pre></pre>
+<p>上面的函数与<code>Rc&lt;T&gt;::make_mut()</code>有所不同，是因为原子变量的原因带来的，可以对比学习，更深刻的了解原子变量。 
+Clone trait实现：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: ?Sized&gt; Clone for Arc&lt;T&gt; {
+   fn clone(&amp;self) -&gt; Arc&lt;T&gt; {
+       //增加一个strong计数
+       let old_size = self.inner().strong.fetch_add(1, Relaxed);
+
+       if old_size &gt; MAX_REFCOUNT {
+           abort();
+       }
+       //从内部创建一个新的ARC&lt;T&gt;
+       Self::from_inner(self.ptr)
+   }
+}
+
+impl&lt;T: ?Sized&gt; Clone for Weak&lt;T&gt; {
+   fn clone(&amp;self) -&gt; Weak&lt;T&gt; {
+       if let Some(inner) = self.inner() {
+           inner.inc_weak()
+       }
+       Weak { ptr: self.ptr }
+   }
+   fn clone(&amp;self) -&gt; Weak&lt;T&gt; {
+       let inner = if let Some(inner) = self.inner() {
+           inner
+       } else {
+           //inner不存在，直接创建一个Weak&lt;T&gt;
+           return Weak { ptr: self.ptr };
+       };
+       //对weak计数加1
+       let old_size = inner.weak.fetch_add(1, Relaxed);
+
+       if old_size &gt; MAX_REFCOUNT {
+           abort();
+       }
+       //创建Weak&lt;T&gt;
+       Weak { ptr: self.ptr }
+   }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>对<code>Arc&lt;MaybeUninit&lt;T&gt;&gt;</code>初始化后assume_init实现方法：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T&gt; Arc&lt;mem::MaybeUninit&lt;T&gt;&gt; {
+    pub unsafe fn assume_init(self) -&gt; Arc&lt;T&gt; {
+        //先用ManuallyDrop将self封装以便不对self做drop操作
+        //然后取出内部的堆指针形成新的Arc&lt;T&gt;。
+        Arc::from_inner(mem::ManuallyDrop::new(self).ptr.cast())
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p><code>Arc&lt;T&gt;</code>其他方法：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: ?Sized&gt; Arc&lt;T&gt; {
+    //相当于Arc&lt;T&gt;的leak函数
+    pub fn into_raw(this: Self) -&gt; *const T {
+        let ptr = Self::as_ptr(&amp;this);
+        //把堆内存指针取出后，由调用代码负责释放，
+        //本结构体要规避后继的释放操作
+        mem::forget(this);
+        ptr
+    }
+
+    //获得堆内存变量的指针，不会涉及安全问题,注意，这里ptr不是堆内存块的首地址，而是向后有偏移
+    //因为ArcInner&lt;T&gt;采用C语言的内存布局，所以value在最后
+    pub fn as_ptr(this: &amp;Self) -&gt; *const T {
+        let ptr: *mut ArcInner&lt;T&gt; = NonNull::as_ptr(this.ptr);
+
+        unsafe { ptr::addr_of_mut!((*ptr).value) }
+    }
+
+    //从堆内存T类型变量的指针重建Arc&lt;T&gt;，注意，这里的ptr一般是调用`Arc&lt;T&gt;::into_raw()获得的裸指针
+    //ptr不是堆内存块首地址，需要减去strong和weak的内存大小
+    pub unsafe fn from_raw(ptr: *const T) -&gt; Self {
+        let offset = unsafe { data_offset(ptr) };
+
+        // 减去偏移量，得到正确的ArcInner堆内存的首地址
+        let rc_ptr =
+            unsafe { (ptr as *mut ArcInner&lt;T&gt;).set_ptr_value((ptr as *mut u8).offset(-offset)) };
+
+        unsafe { Self::from_ptr(rc_ptr) }
+    }
+<span class="boring">}</span></code></pre></pre>
+<p>into_raw, from_raw要成对使用，否则就必须对这两个方法的内存有清晰的认知。否则极易出现问题。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span> 
+<span class="boring">fn main() {
+</span>    pub fn get_mut(this: &amp;mut Self) -&gt; Option&lt;&amp;mut T&gt; {
+        if this.is_unique() { unsafe { Some(Arc::get_mut_unchecked(this)) } } else { None }
+    }
+
+    pub unsafe fn get_mut_unchecked(this: &amp;mut Self) -&gt; &amp;mut T {
+        unsafe { &amp;mut (*this.ptr.as_ptr()).data }
+    }
+
+}
+<span class="boring">}</span></code></pre></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="09-智能指针类型(二).html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a rel="next" href="11-智能指针类型(四).html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="09-智能指针类型(二).html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next" href="11-智能指针类型(四).html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+        <script>
+            window.playground_copyable = true;
+        </script>
+        <script src="elasticlunr.min.js" charset="utf-8"></script>
+        <script src="mark.min.js" charset="utf-8"></script>
+        <script src="searcher.js" charset="utf-8"></script>
+        <script src="clipboard.min.js" charset="utf-8"></script>
+        <script src="highlight.js" charset="utf-8"></script>
+        <script src="book.js" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+    </body>
+</html>

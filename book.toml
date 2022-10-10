@@ -1,0 +1,6 @@
+[book]
+authors = ["kyrosle"]
+language = "zh-cn"
+multilingual = false
+src = "src"
+title = "rust-inside-std-book"
